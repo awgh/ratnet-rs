@@ -126,13 +126,13 @@ impl FilesystemNode {
 
     /// Convert timestamp to hex filename
     fn timestamp_to_hex(timestamp: i64) -> String {
-        format!("{:016x}", timestamp)
+        format!("{timestamp:016x}")
     }
 
     /// Convert hex filename to timestamp
     fn hex_to_timestamp(hex: &str) -> Result<i64> {
         i64::from_str_radix(hex, 16)
-            .map_err(|e| RatNetError::InvalidArgument(format!("Invalid hex timestamp: {}", e)))
+            .map_err(|e| RatNetError::InvalidArgument(format!("Invalid hex timestamp: {e}")))
     }
 
     /// Save data to filesystem
@@ -255,16 +255,14 @@ impl FilesystemNode {
                     complete_data.extend_from_slice(&chunk);
                 } else {
                     return Err(RatNetError::InvalidArgument(format!(
-                        "Missing chunk {} in stream {}",
-                        i, stream_id
+                        "Missing chunk {i} in stream {stream_id}"
                     )));
                 }
             }
             Ok(complete_data)
         } else {
             Err(RatNetError::InvalidArgument(format!(
-                "Stream {} not found",
-                stream_id
+                "Stream {stream_id} not found"
             )))
         }
     }
@@ -295,8 +293,7 @@ impl FilesystemNode {
                     complete_data.extend_from_slice(&chunk_data);
                 } else {
                     return Err(RatNetError::InvalidArgument(format!(
-                        "Missing chunk {} in stream {}",
-                        chunk_num, stream_id
+                        "Missing chunk {chunk_num} in stream {stream_id}"
                     )));
                 }
             }
@@ -443,7 +440,7 @@ impl Node for FilesystemNode {
             })?;
 
             // Decrypt the message content using our content key
-            crypto::decrypt(content_key, &msg.content.to_vec())?
+            crypto::decrypt(content_key, &msg.content)?
         };
 
         // Deserialize the message
@@ -533,8 +530,7 @@ impl Node for FilesystemNode {
             self.check_stream_complete(stream_id).await?;
         } else {
             return Err(RatNetError::InvalidArgument(format!(
-                "Stream {} not found",
-                stream_id
+                "Stream {stream_id} not found"
             )));
         }
         Ok(())
@@ -548,8 +544,7 @@ impl Node for FilesystemNode {
             }
         } else {
             return Err(RatNetError::InvalidArgument(format!(
-                "Stream {} not found",
-                stream_id
+                "Stream {stream_id} not found"
             )));
         }
         Ok(())
@@ -689,7 +684,7 @@ impl Node for FilesystemNode {
         self.contacts
             .get(name)
             .map(|c| c.clone())
-            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{name}' not found")))
     }
 
     async fn get_contacts(&self) -> Result<Vec<Contact>> {
@@ -711,7 +706,7 @@ impl Node for FilesystemNode {
     async fn delete_contact(&self, name: &str) -> Result<()> {
         self.contacts
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{name}' not found")))?;
         Ok(())
     }
 
@@ -722,7 +717,7 @@ impl Node for FilesystemNode {
                 name: c.name.clone(),
                 pubkey: c.pubkey.clone(),
             })
-            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{name}' not found")))
     }
 
     async fn get_channels(&self) -> Result<Vec<Channel>> {
@@ -759,7 +754,7 @@ impl Node for FilesystemNode {
     async fn delete_channel(&self, name: &str) -> Result<()> {
         self.channels
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{name}' not found")))?;
         Ok(())
     }
 
@@ -767,10 +762,7 @@ impl Node for FilesystemNode {
         if let Some(channel) = self.channels.get(name) {
             channel.privkey.to_string()
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Channel '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Channel '{name}' not found")))
         }
     }
 
@@ -782,7 +774,7 @@ impl Node for FilesystemNode {
                 enabled: p.enabled,
                 pubkey: p.privkey.public_key().to_string(),
             })
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))
     }
 
     async fn get_profiles(&self) -> Result<Vec<Profile>> {
@@ -813,7 +805,7 @@ impl Node for FilesystemNode {
     async fn delete_profile(&self, name: &str) -> Result<()> {
         self.profiles
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))?;
         Ok(())
     }
 
@@ -821,14 +813,14 @@ impl Node for FilesystemNode {
         self.profiles
             .get(name)
             .map(|p| p.privkey.public_key())
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))
     }
 
     async fn get_peer(&self, name: &str) -> Result<Peer> {
         self.peers
             .get(name)
             .map(|p| p.clone())
-            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{name}' not found")))
     }
 
     async fn get_peers(&self, group: Option<String>) -> Result<Vec<Peer>> {
@@ -868,7 +860,7 @@ impl Node for FilesystemNode {
     async fn delete_peer(&self, name: &str) -> Result<()> {
         self.peers
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{name}' not found")))?;
         Ok(())
     }
 
@@ -897,7 +889,7 @@ impl Node for FilesystemNode {
             },
 
             Action::GetContact => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -939,7 +931,7 @@ impl Node for FilesystemNode {
             }
 
             Action::DeleteContact => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -955,7 +947,7 @@ impl Node for FilesystemNode {
             }
 
             Action::GetChannel => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -997,7 +989,7 @@ impl Node for FilesystemNode {
             }
 
             Action::DeleteChannel => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1013,7 +1005,7 @@ impl Node for FilesystemNode {
             }
 
             Action::GetProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1055,7 +1047,7 @@ impl Node for FilesystemNode {
             }
 
             Action::DeleteProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1071,7 +1063,7 @@ impl Node for FilesystemNode {
             }
 
             Action::LoadProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1089,7 +1081,7 @@ impl Node for FilesystemNode {
             }
 
             Action::GetPeer => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1105,7 +1097,7 @@ impl Node for FilesystemNode {
             }
 
             Action::GetPeers => {
-                let group = if call.args.len() > 0 {
+                let group = if !call.args.is_empty() {
                     match &call.args[0] {
                         serde_json::Value::String(s) => Some(s.clone()),
                         _ => return Ok(RemoteResponse::error("Invalid argument type".to_string())),
@@ -1156,7 +1148,7 @@ impl Node for FilesystemNode {
             }
 
             Action::DeletePeer => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1172,7 +1164,7 @@ impl Node for FilesystemNode {
             }
 
             Action::SendMsg => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1256,7 +1248,7 @@ impl Node for FilesystemNode {
             }
 
             Action::Dropoff => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -1267,10 +1259,7 @@ impl Node for FilesystemNode {
                         Ok(()) => Ok(RemoteResponse::success(serde_json::Value::Null)),
                         Err(e) => Ok(RemoteResponse::error(e.to_string())),
                     },
-                    Err(e) => Ok(RemoteResponse::error(format!(
-                        "Invalid bundle format: {}",
-                        e
-                    ))),
+                    Err(e) => Ok(RemoteResponse::error(format!("Invalid bundle format: {e}"))),
                 }
             }
 

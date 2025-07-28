@@ -1,10 +1,8 @@
 //! Database functionality tests
 
 use ratnet::api::crypto::KeyPair; // <-- Add this import
-use ratnet::api::{Channel, Contact, Peer, Profile};
 use ratnet::database::{Database, SqliteDatabase};
 use std::sync::Arc;
-use tokio_test;
 
 async fn setup_test_db() -> Arc<SqliteDatabase> {
     let db = SqliteDatabase::new_memory()
@@ -145,7 +143,7 @@ async fn test_profile_operations() {
         .expect("Profile should exist");
 
     assert_eq!(profile.name, "test_profile");
-    assert_eq!(profile.enabled, true);
+    assert!(profile.enabled);
     assert_eq!(profile.pubkey, pubkey);
 
     // Test get profile private key
@@ -161,7 +159,7 @@ async fn test_profile_operations() {
     let profiles = db.get_profiles().await.expect("Failed to get profiles");
     assert_eq!(profiles.len(), 1);
     assert_eq!(profiles[0].name, "test_profile");
-    assert_eq!(profiles[0].enabled, true);
+    assert!(profiles[0].enabled);
     assert_eq!(profiles[0].pubkey, pubkey);
 
     // Test update profile (disabled)
@@ -178,7 +176,7 @@ async fn test_profile_operations() {
         .expect("Failed to get updated profile")
         .expect("Profile should exist");
 
-    assert_eq!(updated_profile.enabled, false);
+    assert!(!updated_profile.enabled);
     assert_eq!(updated_profile.pubkey, pubkey2);
 
     // Test delete profile
@@ -216,7 +214,7 @@ async fn test_peer_operations() {
         .expect("Peer should exist");
 
     assert_eq!(peer.name, "test_peer");
-    assert_eq!(peer.enabled, true);
+    assert!(peer.enabled);
     assert_eq!(peer.uri, "127.0.0.1:8080");
     assert_eq!(peer.group, "default");
 
@@ -249,7 +247,7 @@ async fn test_peer_operations() {
         .expect("Failed to get secondary peers");
     assert_eq!(secondary_peers.len(), 1);
     assert_eq!(secondary_peers[0].name, "test_peer2");
-    assert_eq!(secondary_peers[0].enabled, false);
+    assert!(!secondary_peers[0].enabled);
 
     // Test get all peers
     let all_peers = db.get_peers(None).await.expect("Failed to get all peers");

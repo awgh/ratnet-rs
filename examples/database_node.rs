@@ -10,7 +10,6 @@ use ratnet::{
 };
 use std::sync::Arc;
 use tracing::{error, info};
-use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

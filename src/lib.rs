@@ -61,7 +61,7 @@ use crate::registry::Registry;
 
 /// Global type registry for components
 use std::sync::LazyLock;
-pub static REGISTRY: LazyLock<Registry> = LazyLock::new(|| Registry::new());
+pub static REGISTRY: LazyLock<Registry> = LazyLock::new(Registry::new);
 
 /// Initialize all component registrations
 ///

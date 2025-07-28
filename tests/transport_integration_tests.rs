@@ -56,8 +56,8 @@ async fn test_udp_transport_echo() {
 
     // Print the response for debugging
     match &response {
-        Ok(value) => println!("RPC response success: {:?}", value),
-        Err(e) => println!("RPC response error: {:?}", e),
+        Ok(value) => println!("RPC response success: {value:?}"),
+        Err(e) => println!("RPC response error: {e:?}"),
     }
 
     // The response should be successful (echo back)
@@ -241,7 +241,7 @@ async fn test_udp_transport_restart() {
         transport
             .listen("127.0.0.1:0".to_string(), false)
             .await
-            .expect(&format!("Failed to start transport (iteration {})", i));
+            .unwrap_or_else(|_| panic!("Failed to start transport (iteration {i})"));
 
         // Verify it's running
         let local_addr = transport.local_addr().await;
@@ -251,7 +251,7 @@ async fn test_udp_transport_restart() {
         transport
             .stop()
             .await
-            .expect(&format!("Failed to stop transport (iteration {})", i));
+            .unwrap_or_else(|_| panic!("Failed to stop transport (iteration {i})"));
 
         // Small delay
         sleep(Duration::from_millis(100)).await;

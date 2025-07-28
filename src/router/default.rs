@@ -52,7 +52,7 @@ impl DefaultRouter {
 
             let channel_name = String::from_utf8(data[offset..offset + name_len].to_vec())
                 .map_err(|e| {
-                    RatNetError::Serialization(format!("Invalid UTF-8 in channel name: {}", e))
+                    RatNetError::Serialization(format!("Invalid UTF-8 in channel name: {e}"))
                 })?;
 
             offset += name_len;
@@ -84,7 +84,7 @@ impl DefaultRouter {
 
         let channel_name =
             String::from_utf8(data[9..9 + channel_name_len].to_vec()).map_err(|e| {
-                RatNetError::Serialization(format!("Invalid UTF-8 in channel name: {}", e))
+                RatNetError::Serialization(format!("Invalid UTF-8 in channel name: {e}"))
             })?;
 
         debug!(

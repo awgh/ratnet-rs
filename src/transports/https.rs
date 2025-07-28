@@ -98,7 +98,7 @@ impl HttpsTransport {
     fn parse_certs(&self) -> Result<Vec<Certificate>> {
         let mut cursor = std::io::Cursor::new(&self.cert_pem);
         let cert_ders = certs(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {e}")))?;
 
         Ok(cert_ders.into_iter().map(Certificate).collect())
     }
@@ -108,7 +108,7 @@ impl HttpsTransport {
     fn parse_private_key(&self) -> Result<PrivateKey> {
         let mut cursor = std::io::Cursor::new(&self.key_pem);
         let keys = pkcs8_private_keys(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {e}")))?;
 
         if keys.is_empty() {
             return Err(RatNetError::Transport("No private keys found".to_string()));
@@ -127,9 +127,7 @@ impl HttpsTransport {
             .with_safe_defaults()
             .with_no_client_auth()
             .with_single_cert(certs, key)
-            .map_err(|e| {
-                RatNetError::Transport(format!("Failed to create TLS server config: {}", e))
-            })
+            .map_err(|e| RatNetError::Transport(format!("Failed to create TLS server config: {e}")))
     }
 
     /// Handle HTTP request
@@ -160,7 +158,7 @@ impl HttpsTransport {
                             Ok(call) => call,
                             Err(e) => {
                                 warn!("Failed to parse RemoteCall: {}", e);
-                                let response = RemoteResponse::error(format!("Parse error: {}", e));
+                                let response = RemoteResponse::error(format!("Parse error: {e}"));
                                 let response_bytes = remote_response_to_bytes(&response)
                                     .unwrap_or_else(|_| Bytes::from_static(b"error"));
                                 return Ok(Response::new(Body::from(response_bytes)));
@@ -221,13 +219,13 @@ impl HttpsTransport {
             .uri(url)
             .header("content-type", "application/octet-stream")
             .body(Body::from(data))
-            .map_err(|e| RatNetError::Transport(format!("Failed to build request: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to build request: {e}")))?;
 
         let resp = self
             .client
             .request(req)
             .await
-            .map_err(|e| RatNetError::Transport(format!("HTTP request failed: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("HTTP request failed: {e}")))?;
 
         if !resp.status().is_success() {
             return Err(RatNetError::Transport(format!(
@@ -238,7 +236,7 @@ impl HttpsTransport {
 
         let body_bytes = hyper::body::to_bytes(resp.into_body())
             .await
-            .map_err(|e| RatNetError::Transport(format!("Failed to read response body: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to read response body: {e}")))?;
 
         Ok(body_bytes.to_vec())
     }
@@ -257,7 +255,7 @@ impl Transport for HttpsTransport {
 
         let addr: SocketAddr = listen
             .parse()
-            .map_err(|e| RatNetError::Transport(format!("Invalid listen address: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Invalid listen address: {e}")))?;
 
         let running = self.running.clone();
         let byte_limit = self.byte_limit.clone();

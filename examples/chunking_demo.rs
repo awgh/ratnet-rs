@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let chunk_size = ratnet::api::chunking::calculate_chunk_size(sender_node.clone())
         .await
         .unwrap_or(4096);
-    let expected_chunks = (large_message.content.len() as u32 + chunk_size - 1) / chunk_size;
+    let expected_chunks = (large_message.content.len() as u32).div_ceil(chunk_size);
     info!("Expected chunk size: {} bytes", chunk_size);
     info!("Expected number of chunks: {}", expected_chunks);
 

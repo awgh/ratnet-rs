@@ -3,9 +3,8 @@
 use ratnet::api::*;
 use ratnet::nodes::FilesystemNode;
 use ratnet::router::DefaultRouter;
-use std::path::PathBuf;
 use std::sync::Arc;
-use tracing::{error, info, warn};
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

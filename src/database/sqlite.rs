@@ -48,7 +48,7 @@ impl SqliteDatabase {
             .max_connections(10)
             .connect(database_url)
             .await
-            .map_err(|e| RatNetError::Database(format!("Failed to connect to database: {}", e)))?;
+            .map_err(|e| RatNetError::Database(format!("Failed to connect to database: {e}")))?;
 
         Ok(SqliteDatabase { pool })
     }
@@ -142,7 +142,7 @@ impl Database for SqliteDatabase {
             let privkey: String = row.get("privkey");
             // Derive pubkey from privkey
             let keypair = KeyPair::from_string(&privkey)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
             let pubkey = keypair.public_key();
 
             Ok(Some(Channel {
@@ -165,7 +165,7 @@ impl Database for SqliteDatabase {
                 let privkey: String = row.get("privkey");
                 // Derive pubkey from privkey
                 let keypair = KeyPair::from_string(&privkey)
-                    .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+                    .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
                 let pubkey = keypair.public_key();
 
                 Ok(Channel {
@@ -219,7 +219,7 @@ impl Database for SqliteDatabase {
             let privkey: String = row.get("privkey");
             // Derive pubkey from privkey
             let keypair = KeyPair::from_string(&privkey)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
             let pubkey = keypair.public_key();
 
             Ok(Some(Profile {
@@ -243,7 +243,7 @@ impl Database for SqliteDatabase {
                 let privkey: String = row.get("privkey");
                 // Derive pubkey from privkey
                 let keypair = KeyPair::from_string(&privkey)
-                    .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+                    .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
                 let pubkey = keypair.public_key();
 
                 Ok(Profile {

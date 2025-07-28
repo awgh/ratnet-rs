@@ -1,4 +1,4 @@
-use ratnet::api::{Policy, JSON};
+use ratnet::api::Policy;
 #[cfg(not(feature = "p2p"))]
 use ratnet::policy::p2p::P2PPolicy;
 #[cfg(feature = "p2p")]
@@ -137,10 +137,7 @@ async fn test_p2p_policy_start_stop_real() {
         assert!(!policy.is_advertising());
     } else {
         // If starting failed (likely due to socket binding), that's okay for tests
-        println!(
-            "P2P policy start failed (expected in test environment): {:?}",
-            start_result
-        );
+        println!("P2P policy start failed (expected in test environment): {start_result:?}");
     }
 }
 

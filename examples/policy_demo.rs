@@ -6,7 +6,6 @@
 
 use std::sync::Arc;
 use std::time::Duration;
-use tracing_subscriber;
 
 use ratnet::api::{Node, Policy, JSON};
 use ratnet::nodes::MemoryNode;
@@ -107,10 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("   - Advertising: {}", p2p_policy.is_advertising());
             }
             Err(e) => {
-                println!(
-                    "   P2P policy start failed (expected in some environments): {:?}",
-                    e
-                );
+                println!("   P2P policy start failed (expected in some environments): {e:?}");
                 println!("   This is normal in test environments where socket binding may be restricted.");
             }
         }
@@ -118,8 +114,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // P2P Policy JSON Serialization (inside the same block)
         println!("\n   P2P Policy JSON:");
         match p2p_policy.to_json() {
-            Ok(json) => println!("   {}", json),
-            Err(e) => println!("   Error serializing: {:?}", e),
+            Ok(json) => println!("   {json}"),
+            Err(e) => println!("   Error serializing: {e:?}"),
         }
     }
 
@@ -140,8 +136,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("   Server Policy JSON:");
     match server_policy.to_json() {
-        Ok(json) => println!("   {}", json),
-        Err(e) => println!("   Error serializing: {:?}", e),
+        Ok(json) => println!("   {json}"),
+        Err(e) => println!("   Error serializing: {e:?}"),
     }
 
     #[cfg(not(feature = "p2p"))]

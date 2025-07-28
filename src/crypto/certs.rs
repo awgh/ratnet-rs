@@ -68,12 +68,12 @@ impl CertificateBuilder {
 
         // Create the certificate
         let cert = Certificate::from_params(params)
-            .map_err(|e| RatNetError::Crypto(format!("Failed to create certificate: {:?}", e)))?;
+            .map_err(|e| RatNetError::Crypto(format!("Failed to create certificate: {e:?}")))?;
 
         // Generate certificate PEM
-        let cert_pem = cert.serialize_pem().map_err(|e| {
-            RatNetError::Crypto(format!("Failed to serialize certificate: {:?}", e))
-        })?;
+        let cert_pem = cert
+            .serialize_pem()
+            .map_err(|e| RatNetError::Crypto(format!("Failed to serialize certificate: {e:?}")))?;
 
         // Generate private key PEM
         let key_pem = cert.serialize_private_key_pem();
@@ -141,7 +141,7 @@ pub fn extract_public_key_from_cert(cert_pem: &[u8]) -> Result<Vec<u8>> {
             // Decode the base64 certificate
             let cert_der = base64::engine::general_purpose::STANDARD
                 .decode(&clean_content)
-                .map_err(|e| RatNetError::Crypto(format!("Failed to decode certificate: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Failed to decode certificate: {e}")))?;
 
             // For Ed25519 certificates, the public key is typically in the last 32 bytes
             // This is a simplified approach - in production you'd parse the ASN.1 structure

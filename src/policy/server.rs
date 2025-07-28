@@ -79,10 +79,10 @@ impl Policy for ServerPolicy {
     }
 
     async fn stop(&self) -> Result<()> {
-        if !self
+        if self
             .running
             .compare_exchange(true, false, Ordering::SeqCst, Ordering::Relaxed)
-            .is_ok()
+            .is_err()
         {
             return Ok(()); // Already stopped
         }

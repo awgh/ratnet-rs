@@ -59,7 +59,7 @@ impl Transport for UdpTransport {
 
         let socket = UdpSocket::bind(&listen_addr)
             .await
-            .map_err(|e| RatNetError::Transport(format!("Failed to bind UDP socket: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to bind UDP socket: {e}")))?;
 
         let socket = Arc::new(socket);
 
@@ -110,7 +110,7 @@ impl Transport for UdpTransport {
         // Parse the host address
         let target_addr: SocketAddr = host
             .parse()
-            .map_err(|e| RatNetError::Transport(format!("Invalid host address: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Invalid host address: {e}")))?;
 
         // Get our socket
         let socket = {
@@ -136,7 +136,7 @@ impl Transport for UdpTransport {
         let sent_bytes = socket
             .send_to(&call_bytes, target_addr)
             .await
-            .map_err(|e| RatNetError::Transport(format!("Failed to send UDP packet: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to send UDP packet: {e}")))?;
         debug!("Sent {} bytes to {}", sent_bytes, target_addr);
 
         // Wait for response with timeout
@@ -167,8 +167,7 @@ impl Transport for UdpTransport {
             Ok(Err(e)) => {
                 debug!("Failed to receive UDP response: {}", e);
                 Err(RatNetError::Transport(format!(
-                    "Failed to receive UDP response: {}",
-                    e
+                    "Failed to receive UDP response: {e}"
                 )))
             }
             Err(_) => {
@@ -342,7 +341,7 @@ impl UdpTransport {
 
                 // Send response back
                 let sent_bytes = socket.send_to(&response_bytes, peer).await.map_err(|e| {
-                    RatNetError::Transport(format!("Failed to send UDP response: {}", e))
+                    RatNetError::Transport(format!("Failed to send UDP response: {e}"))
                 })?;
 
                 debug!("Sent {} response bytes to {}", sent_bytes, peer);
@@ -353,7 +352,7 @@ impl UdpTransport {
                 // If it's not an RPC call, just echo back
                 debug!("Received non-RPC UDP message from {}, echoing back", peer);
                 let sent_bytes = socket.send_to(data, peer).await.map_err(|e| {
-                    RatNetError::Transport(format!("Failed to echo UDP message: {}", e))
+                    RatNetError::Transport(format!("Failed to echo UDP message: {e}"))
                 })?;
                 debug!("Echoed {} bytes back to {}", sent_bytes, peer);
                 Ok(())
@@ -428,11 +427,11 @@ mod tests {
         };
 
         let call_bytes = crate::api::remote_call_to_bytes(&call).expect("Failed to serialize call");
-        println!("Serialized call: {:?}", call_bytes);
+        println!("Serialized call: {call_bytes:?}");
 
         let deserialized_call =
             crate::api::remote_call_from_bytes(&call_bytes).expect("Failed to deserialize call");
-        println!("Deserialized call: {:?}", deserialized_call);
+        println!("Deserialized call: {deserialized_call:?}");
 
         assert_eq!(call.action, deserialized_call.action);
         assert_eq!(call.args.len(), deserialized_call.args.len());
@@ -441,11 +440,11 @@ mod tests {
         let response = crate::api::RemoteResponse::success(serde_json::json!({"test": "value"}));
         let response_bytes =
             crate::api::remote_response_to_bytes(&response).expect("Failed to serialize response");
-        println!("Serialized response: {:?}", response_bytes);
+        println!("Serialized response: {response_bytes:?}");
 
         let deserialized_response = crate::api::remote_response_from_bytes(&response_bytes)
             .expect("Failed to deserialize response");
-        println!("Deserialized response: {:?}", deserialized_response);
+        println!("Deserialized response: {deserialized_response:?}");
 
         assert_eq!(response.error, deserialized_response.error);
         // The value gets serialized as a JSON string, so we need to parse it back

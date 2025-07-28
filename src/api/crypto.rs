@@ -91,8 +91,7 @@ impl PubKey {
             let bytes = base64::engine::general_purpose::STANDARD
                 .decode(encoded)
                 .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key encoding: {e}")))?;
-            let _key_pair = Ed25519KeyPair::from_pkcs8(&bytes)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key format: {e}")))?;
+            // For public keys, we just store the bytes directly
             Ok(PubKey::Ed25519(bytes))
         } else if s.starts_with("kyber:") {
             let encoded = s.strip_prefix("kyber:").unwrap();

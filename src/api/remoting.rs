@@ -263,7 +263,7 @@ fn serialize(w: &mut Vec<u8>, v: &Value) -> Result<()> {
         _ => {
             // For other types, serialize as JSON string
             let json_str = serde_json::to_string(v).map_err(|e| {
-                RatNetError::Serialization(format!("JSON serialization failed: {}", e))
+                RatNetError::Serialization(format!("JSON serialization failed: {e}"))
             })?;
             w.write_u8(APIType::String as u8)?;
             write_lv(w, json_str.as_bytes())?;
@@ -290,7 +290,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
         APIType::String => {
             let data = read_lv(r)?;
             let s = String::from_utf8(data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             Ok(Value::String(s))
         }
         APIType::Bytes => {
@@ -329,9 +329,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let name_data = read_lv(&mut cursor)?;
             let pubkey_data = read_lv(&mut cursor)?;
             let name = String::from_utf8(name_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let pubkey = String::from_utf8(pubkey_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
 
             let mut contact = serde_json::Map::new();
             contact.insert("name".to_string(), Value::String(name));
@@ -347,9 +347,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let name_data = read_lv(&mut cursor)?;
                 let pubkey_data = read_lv(&mut cursor)?;
                 let name = String::from_utf8(name_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let pubkey = String::from_utf8(pubkey_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
 
                 let mut contact = serde_json::Map::new();
                 contact.insert("name".to_string(), Value::String(name));
@@ -364,9 +364,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let name_data = read_lv(&mut cursor)?;
             let pubkey_data = read_lv(&mut cursor)?;
             let name = String::from_utf8(name_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let pubkey = String::from_utf8(pubkey_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
 
             let mut channel = serde_json::Map::new();
             channel.insert("name".to_string(), Value::String(name));
@@ -382,9 +382,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let name_data = read_lv(&mut cursor)?;
                 let pubkey_data = read_lv(&mut cursor)?;
                 let name = String::from_utf8(name_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let pubkey = String::from_utf8(pubkey_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
 
                 let mut channel = serde_json::Map::new();
                 channel.insert("name".to_string(), Value::String(name));
@@ -401,9 +401,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let enabled_byte = cursor.read_u8()?;
 
             let name = String::from_utf8(name_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let pubkey = String::from_utf8(pubkey_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let enabled = enabled_byte == 1;
 
             let mut profile = serde_json::Map::new();
@@ -423,9 +423,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let enabled_byte = cursor.read_u8()?;
 
                 let name = String::from_utf8(name_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let pubkey = String::from_utf8(pubkey_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let enabled = enabled_byte == 1;
 
                 let mut profile = serde_json::Map::new();
@@ -445,11 +445,11 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let enabled_byte = cursor.read_u8()?;
 
             let name = String::from_utf8(name_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let group = String::from_utf8(group_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let uri = String::from_utf8(uri_data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             let enabled = enabled_byte == 1;
 
             let mut peer = serde_json::Map::new();
@@ -471,11 +471,11 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let enabled_byte = cursor.read_u8()?;
 
                 let name = String::from_utf8(name_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let group = String::from_utf8(group_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let uri = String::from_utf8(uri_data)
-                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                    .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
                 let enabled = enabled_byte == 1;
 
                 let mut peer = serde_json::Map::new();
@@ -508,7 +508,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             // For unsupported types, try to read as string
             let data = read_lv(r)?;
             let s = String::from_utf8(data)
-                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
+                .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {e}")))?;
             Ok(Value::String(s))
         }
     }

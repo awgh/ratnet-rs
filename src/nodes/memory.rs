@@ -399,7 +399,7 @@ impl Node for MemoryNode {
             },
 
             Action::GetContact => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -441,7 +441,7 @@ impl Node for MemoryNode {
             }
 
             Action::DeleteContact => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -457,7 +457,7 @@ impl Node for MemoryNode {
             }
 
             Action::GetChannel => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -499,7 +499,7 @@ impl Node for MemoryNode {
             }
 
             Action::DeleteChannel => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -515,7 +515,7 @@ impl Node for MemoryNode {
             }
 
             Action::GetProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -557,7 +557,7 @@ impl Node for MemoryNode {
             }
 
             Action::DeleteProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -573,7 +573,7 @@ impl Node for MemoryNode {
             }
 
             Action::LoadProfile => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -591,7 +591,7 @@ impl Node for MemoryNode {
             }
 
             Action::GetPeer => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -607,7 +607,7 @@ impl Node for MemoryNode {
             }
 
             Action::GetPeers => {
-                let group = if call.args.len() > 0 {
+                let group = if !call.args.is_empty() {
                     match &call.args[0] {
                         serde_json::Value::String(s) => Some(s.clone()),
                         _ => return Ok(RemoteResponse::error("Invalid argument type".to_string())),
@@ -658,7 +658,7 @@ impl Node for MemoryNode {
             }
 
             Action::DeletePeer => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -674,7 +674,7 @@ impl Node for MemoryNode {
             }
 
             Action::SendMsg => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -686,8 +686,7 @@ impl Node for MemoryNode {
                         Err(e) => Ok(RemoteResponse::error(e.to_string())),
                     },
                     Err(e) => Ok(RemoteResponse::error(format!(
-                        "Invalid message format: {}",
-                        e
+                        "Invalid message format: {e}"
                     ))),
                 }
             }
@@ -767,7 +766,7 @@ impl Node for MemoryNode {
             }
 
             Action::GetChannelPrivKey => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -783,7 +782,7 @@ impl Node for MemoryNode {
             }
 
             Action::FlushOutbox => {
-                let max_age = if call.args.len() > 0 {
+                let max_age = if !call.args.is_empty() {
                     match &call.args[0] {
                         serde_json::Value::Number(n) => n.as_i64().unwrap_or(3600),
                         _ => 3600,
@@ -904,7 +903,7 @@ impl Node for MemoryNode {
             }
 
             Action::Dropoff => {
-                if call.args.len() < 1 {
+                if call.args.is_empty() {
                     return Ok(RemoteResponse::error("Invalid argument count".to_string()));
                 }
 
@@ -915,10 +914,7 @@ impl Node for MemoryNode {
                         Ok(()) => Ok(RemoteResponse::success(serde_json::Value::Null)),
                         Err(e) => Ok(RemoteResponse::error(e.to_string())),
                     },
-                    Err(e) => Ok(RemoteResponse::error(format!(
-                        "Invalid bundle format: {}",
-                        e
-                    ))),
+                    Err(e) => Ok(RemoteResponse::error(format!("Invalid bundle format: {e}"))),
                 }
             }
 
@@ -1066,7 +1062,7 @@ impl Node for MemoryNode {
         self.contacts
             .get(name)
             .map(|entry| entry.value().clone())
-            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{name}' not found")))
     }
 
     async fn get_contacts(&self) -> Result<Vec<Contact>> {
@@ -1089,7 +1085,7 @@ impl Node for MemoryNode {
     async fn delete_contact(&self, name: &str) -> Result<()> {
         self.contacts
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Contact '{name}' not found")))?;
         Ok(())
     }
 
@@ -1100,7 +1096,7 @@ impl Node for MemoryNode {
                 name: entry.name.clone(),
                 pubkey: entry.pubkey.clone(),
             })
-            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{name}' not found")))
     }
 
     async fn get_channels(&self) -> Result<Vec<Channel>> {
@@ -1117,7 +1113,7 @@ impl Node for MemoryNode {
     async fn add_channel(&self, name: String, privkey: String) -> Result<()> {
         // Parse the private key string and derive the public key
         let keypair = KeyPair::from_string(&privkey)
-            .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+            .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
 
         let pubkey = keypair.public_key();
 
@@ -1133,7 +1129,7 @@ impl Node for MemoryNode {
     async fn delete_channel(&self, name: &str) -> Result<()> {
         self.channels
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Channel '{name}' not found")))?;
         Ok(())
     }
 
@@ -1141,10 +1137,7 @@ impl Node for MemoryNode {
         if let Some(entry) = self.channels.get(name) {
             entry.privkey.to_string()
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Channel '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Channel '{name}' not found")))
         }
     }
 
@@ -1156,7 +1149,7 @@ impl Node for MemoryNode {
                 enabled: entry.enabled,
                 pubkey: entry.privkey.public_key().to_string(),
             })
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))
     }
 
     async fn get_profiles(&self) -> Result<Vec<Profile>> {
@@ -1184,7 +1177,7 @@ impl Node for MemoryNode {
     async fn delete_profile(&self, name: &str) -> Result<()> {
         self.profiles
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))?;
         Ok(())
     }
 
@@ -1192,14 +1185,14 @@ impl Node for MemoryNode {
         self.profiles
             .get(name)
             .map(|entry| entry.privkey.public_key())
-            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Profile '{name}' not found")))
     }
 
     async fn get_peer(&self, name: &str) -> Result<Peer> {
         self.peers
             .get(name)
             .map(|entry| entry.value().clone())
-            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{}' not found", name)))
+            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{name}' not found")))
     }
 
     async fn get_peers(&self, group: Option<String>) -> Result<Vec<Peer>> {
@@ -1238,7 +1231,7 @@ impl Node for MemoryNode {
     async fn delete_peer(&self, name: &str) -> Result<()> {
         self.peers
             .remove(name)
-            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{}' not found", name)))?;
+            .ok_or_else(|| RatNetError::NotFound(format!("Peer '{name}' not found")))?;
         Ok(())
     }
 
@@ -1271,8 +1264,7 @@ impl MemoryNode {
             Err(e) => {
                 error!("Failed to serialize message for outbox: {}", e);
                 return Err(RatNetError::Serialization(format!(
-                    "Failed to serialize message: {}",
-                    e
+                    "Failed to serialize message: {e}"
                 )));
             }
         };
@@ -1293,12 +1285,12 @@ impl MemoryNode {
         if let Some(channel) = &outbox_msg.channel {
             self.outbox
                 .entry(channel.clone())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(outbox_msg);
         } else {
             self.outbox
                 .entry(String::new())
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(outbox_msg);
         }
 
@@ -1319,8 +1311,7 @@ impl MemoryNode {
                 match serde_json::from_slice::<Msg>(bundle_data) {
                     Ok(message) => Ok(vec![message]),
                     Err(e) => Err(RatNetError::Serialization(format!(
-                        "Failed to deserialize bundle: {}",
-                        e
+                        "Failed to deserialize bundle: {e}"
                     ))),
                 }
             }
@@ -1335,7 +1326,7 @@ impl MemoryNode {
 
         // Serialize messages as JSON array
         let json_data = serde_json::to_vec(&messages).map_err(|e| {
-            RatNetError::Serialization(format!("Failed to serialize messages: {}", e))
+            RatNetError::Serialization(format!("Failed to serialize messages: {e}"))
         })?;
 
         Ok(Bytes::from(json_data))
@@ -1344,16 +1335,15 @@ impl MemoryNode {
     /// Deserialize outbox message data into a Msg
     async fn deserialize_outbox_msg(&self, msg_data: &[u8]) -> Result<Msg> {
         serde_json::from_slice(msg_data).map_err(|e| {
-            RatNetError::Serialization(format!("Failed to deserialize outbox message: {}", e))
+            RatNetError::Serialization(format!("Failed to deserialize outbox message: {e}"))
         })
     }
 
     /// Serialize a Msg into outbox message data
     #[allow(dead_code)]
     async fn serialize_msg_to_outbox(&self, msg: &Msg) -> Result<Bytes> {
-        let json_data = serde_json::to_vec(msg).map_err(|e| {
-            RatNetError::Serialization(format!("Failed to serialize message: {}", e))
-        })?;
+        let json_data = serde_json::to_vec(msg)
+            .map_err(|e| RatNetError::Serialization(format!("Failed to serialize message: {e}")))?;
 
         Ok(Bytes::from(json_data))
     }

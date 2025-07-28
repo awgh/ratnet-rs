@@ -2,7 +2,6 @@
 
 use ratnet::prelude::*;
 use std::sync::Arc;
-use tokio_test;
 
 #[cfg(feature = "tls")]
 use ratnet::transports::TlsTransport;
@@ -347,7 +346,6 @@ async fn test_udp_transport_double_stop() {
 #[tokio::test]
 async fn test_udp_transport_no_memory_leaks() {
     use std::sync::atomic::{AtomicUsize, Ordering};
-    use std::sync::Arc;
 
     static TRANSPORT_COUNT: AtomicUsize = AtomicUsize::new(0);
 

@@ -204,7 +204,7 @@ impl BenchmarkRunner {
                 Err(e) => {
                     errors += 1;
                     if self.config.verbose {
-                        println!("Failed to send message {}: {:?}", i, e);
+                        println!("Failed to send message {i}: {e:?}");
                     }
                 }
             }
@@ -322,7 +322,7 @@ impl BenchmarkRunner {
         report.push_str("=== RatNet-rs Benchmark Report ===\n\n");
 
         // Configuration summary
-        report.push_str(&format!("Configuration:\n"));
+        report.push_str("Configuration:\n");
         report.push_str(&format!("  Node Type: {:?}\n", self.config.node_type));
         report.push_str(&format!("  Transport: {:?}\n", self.config.transport_type));
         report.push_str(&format!("  Message Count: {}\n", self.config.message_count));
@@ -359,21 +359,19 @@ impl BenchmarkRunner {
             .sum::<f64>()
             / self.results.len() as f64;
 
-        report.push_str(&format!("Performance Summary:\n"));
+        report.push_str("Performance Summary:\n");
         report.push_str(&format!(
-            "  Average Throughput: {:.2} messages/sec\n",
-            avg_throughput_mps
+            "  Average Throughput: {avg_throughput_mps:.2} messages/sec\n"
         ));
         report.push_str(&format!(
-            "  Average Throughput: {:.2} MB/sec\n",
-            avg_throughput_mbps
+            "  Average Throughput: {avg_throughput_mbps:.2} MB/sec\n"
         ));
-        report.push_str(&format!("  Average Latency: {:.2} ms\n", avg_latency));
+        report.push_str(&format!("  Average Latency: {avg_latency:.2} ms\n"));
         report.push_str(&format!(
             "  Average Success Rate: {:.2}%\n",
             avg_success_rate * 100.0
         ));
-        report.push_str(&format!("  Average CPU Usage: {:.2}%\n", avg_cpu_usage));
+        report.push_str(&format!("  Average CPU Usage: {avg_cpu_usage:.2}%\n"));
 
         // Detailed results
         report.push_str("\nDetailed Results:\n");

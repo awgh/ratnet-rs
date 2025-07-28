@@ -2,8 +2,7 @@
 
 use bytes::Bytes;
 use ratnet::api::{
-    Action, Bundle, Channel, Contact, KeyPair, Msg, Peer, Profile, PubKey, RemoteCall,
-    RemoteResponse,
+    Action, Bundle, Channel, Contact, KeyPair, Msg, Peer, PubKey, RemoteCall, RemoteResponse,
 };
 use ratnet::api::{Node, Transport};
 use ratnet::nodes::MemoryNode;
@@ -37,7 +36,7 @@ async fn test_binary_serialization_roundtrip() {
         let serialized = args_to_bytes(&args).expect("Failed to serialize");
         let deserialized = args_from_bytes(&serialized).expect("Failed to deserialize");
 
-        assert_eq!(args, deserialized, "Roundtrip failed for {}", description);
+        assert_eq!(args, deserialized, "Roundtrip failed for {description}");
     }
 }
 

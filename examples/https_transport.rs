@@ -15,8 +15,6 @@ use std::sync::Arc;
 #[cfg(feature = "https")]
 use tracing::{error, info};
 #[cfg(feature = "https")]
-use tracing_subscriber;
-
 #[cfg(feature = "https")]
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

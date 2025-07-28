@@ -10,7 +10,6 @@ use ratnet::{
 };
 use std::sync::Arc;
 use tracing::{error, info};
-use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -71,7 +70,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Create database
     #[cfg(feature = "sqlite")]
     let database = Arc::new(
-        SqliteDatabase::new(&format!("sqlite://{}", db_file))
+        SqliteDatabase::new(&format!("sqlite://{db_file}"))
             .await
             .expect("Failed to create database"),
     );
@@ -104,7 +103,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Create transports
     #[cfg(feature = "https")]
     let public_transport = Arc::new(HttpsTransport::new_with_certs(
-        format!("0.0.0.0:{}", public_port),
+        format!("0.0.0.0:{public_port}"),
         cert_pem.clone(),
         key_pem.clone(),
         true,
@@ -118,7 +117,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     #[cfg(feature = "https")]
     let admin_transport = Arc::new(HttpsTransport::new_with_certs(
-        format!("127.0.0.1:{}", admin_port),
+        format!("127.0.0.1:{admin_port}"),
         cert_pem,
         key_pem,
         true,
@@ -135,12 +134,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         "server" => {
             let public_policy = Arc::new(ServerPolicy::new(
                 public_transport.clone(),
-                format!("0.0.0.0:{}", public_port),
+                format!("0.0.0.0:{public_port}"),
                 false,
             )) as Arc<dyn Policy>;
             let admin_policy = Arc::new(ServerPolicy::new(
                 admin_transport.clone(),
-                format!("127.0.0.1:{}", admin_port),
+                format!("127.0.0.1:{admin_port}"),
                 true,
             )) as Arc<dyn Policy>;
             vec![public_policy, admin_policy]
@@ -151,12 +150,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             info!("P2P mode not yet implemented, falling back to server mode");
             let public_policy = Arc::new(ServerPolicy::new(
                 public_transport.clone(),
-                format!("0.0.0.0:{}", public_port),
+                format!("0.0.0.0:{public_port}"),
                 false,
             )) as Arc<dyn Policy>;
             let admin_policy = Arc::new(ServerPolicy::new(
                 admin_transport.clone(),
-                format!("127.0.0.1:{}", admin_port),
+                format!("127.0.0.1:{admin_port}"),
                 true,
             )) as Arc<dyn Policy>;
             vec![public_policy, admin_policy]

@@ -114,10 +114,10 @@ impl P2PPolicy {
 
     /// Initialize the listen socket for mDNS multicast
     async fn init_listen_socket(&self) -> Result<()> {
-        let socket = TokioUdpSocket::bind(format!("0.0.0.0:{}", MULTICAST_PORT))
+        let socket = TokioUdpSocket::bind(format!("0.0.0.0:{MULTICAST_PORT}"))
             .await
             .map_err(|e| {
-                RatNetError::Transport(format!("Failed to bind mDNS listen socket: {}", e))
+                RatNetError::Transport(format!("Failed to bind mDNS listen socket: {e}"))
             })?;
 
         // Join multicast group
@@ -218,18 +218,18 @@ impl P2PPolicy {
 
     /// Initialize the dial socket for mDNS advertising
     async fn init_dial_socket(&self) -> Result<()> {
-        let socket = TokioUdpSocket::bind("0.0.0.0:0").await.map_err(|e| {
-            RatNetError::Transport(format!("Failed to bind mDNS dial socket: {}", e))
-        })?;
+        let socket = TokioUdpSocket::bind("0.0.0.0:0")
+            .await
+            .map_err(|e| RatNetError::Transport(format!("Failed to bind mDNS dial socket: {e}")))?;
 
         // Prepare the service string
         let local_addr = socket
             .local_addr()
-            .map_err(|e| RatNetError::Transport(format!("Failed to get local address: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to get local address: {e}")))?;
 
         // Extract port from listen_uri
         let port =
-            self.listen_uri.split(':').last().ok_or_else(|| {
+            self.listen_uri.split(':').next_back().ok_or_else(|| {
                 RatNetError::InvalidArgument("Invalid listen URI format".to_string())
             })?;
 
@@ -502,7 +502,7 @@ impl P2PPolicy {
         // Create mDNS advertisement packet
         let packet = self.create_mdns_advertisement_packet(&local_address, negotiation_rank)?;
 
-        let multicast_addr: SocketAddr = format!("{}:{}", MULTICAST_ADDR, MULTICAST_PORT)
+        let multicast_addr: SocketAddr = format!("{MULTICAST_ADDR}:{MULTICAST_PORT}")
             .parse()
             .unwrap_or_else(|_| "224.0.0.251:5353".parse().unwrap());
 
@@ -537,14 +537,14 @@ impl P2PPolicy {
         let encoded_address = hex::encode(local_address.as_bytes());
         let encoded_rank = hex::encode(negotiation_rank.to_le_bytes());
 
-        let rn_name = format!("rn.{}.local", encoded_address);
-        let ng_name = format!("ng.{}.local", encoded_rank);
+        let rn_name = format!("rn.{encoded_address}.local");
+        let ng_name = format!("ng.{encoded_rank}.local");
 
         // Add SRV record for RatNet service
         self.add_dns_srv_record(&mut packet, &rn_name, &ng_name, 5353, 0, 0)?;
 
         // Add TXT record with negotiation rank
-        self.add_dns_txt_record(&mut packet, &rn_name, &format!("rank={}", negotiation_rank))?;
+        self.add_dns_txt_record(&mut packet, &rn_name, &format!("rank={negotiation_rank}"))?;
 
         Ok(packet)
     }
@@ -752,8 +752,8 @@ impl Policy for P2PPolicy {
                     0x00, 0x00, // Additional RRs
                 ]);
 
-                let rn_name = format!("rn.{}.local.", encoded_address);
-                let ng_name = format!("ng.{}.local.", encoded_rank);
+                let rn_name = format!("rn.{encoded_address}.local.");
+                let ng_name = format!("ng.{encoded_rank}.local.");
 
                 packet.extend_from_slice(rn_name.as_bytes());
                 packet.push(0); // null terminator
@@ -765,7 +765,7 @@ impl Policy for P2PPolicy {
                 packet.extend_from_slice(&[0x00, 0x21]); // SRV type
                 packet.extend_from_slice(&[0x00, 0x01]); // IN class
 
-                let multicast_addr: SocketAddr = format!("{}:{}", MULTICAST_ADDR, MULTICAST_PORT)
+                let multicast_addr: SocketAddr = format!("{MULTICAST_ADDR}:{MULTICAST_PORT}")
                     .parse()
                     .unwrap_or_else(|_| "224.0.0.251:5353".parse().unwrap());
 
@@ -1057,10 +1057,7 @@ mod tests {
             assert!(!policy.is_advertising());
         } else {
             // If starting failed (likely due to socket binding), that's okay for tests
-            println!(
-                "P2P policy start failed (expected in test environment): {:?}",
-                start_result
-            );
+            println!("P2P policy start failed (expected in test environment): {start_result:?}");
         }
     }
 

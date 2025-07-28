@@ -15,8 +15,6 @@ use std::sync::Arc;
 #[cfg(feature = "tls")]
 use tracing::{error, info};
 #[cfg(feature = "tls")]
-use tracing_subscriber;
-
 #[cfg(feature = "tls")]
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

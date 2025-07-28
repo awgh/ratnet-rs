@@ -1,4 +1,4 @@
-use ratnet::api::{Action, Bundle, Node, PubKey, RemoteCall, RemoteResponse, Transport};
+use ratnet::api::{Action, Bundle, Node, RemoteCall, Transport};
 use ratnet::nodes::MemoryNode;
 use ratnet::transports::UdpTransport;
 use std::sync::Arc;

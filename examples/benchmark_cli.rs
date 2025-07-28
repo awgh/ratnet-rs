@@ -121,10 +121,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let message_size = args.value_of("size").unwrap().parse::<usize>()?;
 
             println!("Running quick benchmark...");
-            println!("Node Type: {:?}", node_type);
-            println!("Transport: {:?}", transport_type);
-            println!("Messages: {}", message_count);
-            println!("Message Size: {} bytes", message_size);
+            println!("Node Type: {node_type:?}");
+            println!("Transport: {transport_type:?}");
+            println!("Messages: {message_count}");
+            println!("Message Size: {message_size} bytes");
 
             let result =
                 quick_benchmark(node_type, transport_type, message_count, message_size).await;
@@ -145,7 +145,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(("comprehensive", _)) => {
             println!("Running comprehensive benchmark suite...");
             let report = comprehensive_benchmark().await;
-            println!("{}", report);
+            println!("{report}");
         }
 
         Some(("custom", args)) => {
@@ -153,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let output_file = args.value_of("output");
 
             if !Path::new(config_file).exists() {
-                eprintln!("Configuration file not found: {}", config_file);
+                eprintln!("Configuration file not found: {config_file}");
                 return Ok(());
             }
 
@@ -161,7 +161,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let config: BenchmarkConfig = serde_json::from_str(&config_content)?;
 
             println!("Running custom benchmark...");
-            println!("Configuration: {:?}", config);
+            println!("Configuration: {config:?}");
 
             let mut runner = BenchmarkRunner::new(config);
             let results = runner.run_benchmark_suite(3).await;
@@ -169,9 +169,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if let Some(output_path) = output_file {
                 std::fs::write(output_path, &report)?;
-                println!("Results saved to: {}", output_path);
+                println!("Results saved to: {output_path}");
             } else {
-                println!("{}", report);
+                println!("{report}");
             }
         }
 
@@ -180,8 +180,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let concurrent = args.value_of("concurrent").unwrap().parse::<usize>()?;
 
             println!("Running stress test...");
-            println!("Duration: {} seconds", duration);
-            println!("Concurrent Senders: {}", concurrent);
+            println!("Duration: {duration} seconds");
+            println!("Concurrent Senders: {concurrent}");
 
             // Create stress test configuration
             let config = BenchmarkConfig {
@@ -199,7 +199,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let results = runner.run_benchmark_suite(1).await;
             let report = runner.generate_report();
 
-            println!("{}", report);
+            println!("{report}");
         }
 
         _ => {

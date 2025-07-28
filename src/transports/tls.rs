@@ -70,7 +70,7 @@ impl TlsTransport {
     fn parse_certs(&self) -> Result<Vec<Certificate>> {
         let mut cursor = std::io::Cursor::new(&self.cert_pem);
         let cert_ders = certs(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {e}")))?;
 
         Ok(cert_ders.into_iter().map(Certificate).collect())
     }
@@ -80,7 +80,7 @@ impl TlsTransport {
     fn parse_private_key(&self) -> Result<PrivateKey> {
         let mut cursor = std::io::Cursor::new(&self.key_pem);
         let keys = pkcs8_private_keys(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {e}")))?;
 
         if keys.is_empty() {
             return Err(RatNetError::Transport("No private keys found".to_string()));
@@ -99,9 +99,7 @@ impl TlsTransport {
             .with_safe_defaults()
             .with_no_client_auth()
             .with_single_cert(certs, key)
-            .map_err(|e| {
-                RatNetError::Transport(format!("Failed to create TLS server config: {}", e))
-            })
+            .map_err(|e| RatNetError::Transport(format!("Failed to create TLS server config: {e}")))
     }
 
     /// Create TLS client config
@@ -138,7 +136,7 @@ impl TlsTransport {
                 Ok(call) => call,
                 Err(e) => {
                     warn!("Failed to parse RemoteCall: {}", e);
-                    let response = RemoteResponse::error(format!("Parse error: {}", e));
+                    let response = RemoteResponse::error(format!("Parse error: {e}"));
                     let response_bytes = remote_response_to_bytes(&response)?;
                     let _ = self.write_buffer(&mut stream, &response_bytes).await;
                     continue;
@@ -194,8 +192,7 @@ impl TlsTransport {
 
         if len > self.byte_limit.load(Ordering::Relaxed) as usize {
             return Err(RatNetError::Transport(format!(
-                "Message too large: {} bytes",
-                len
+                "Message too large: {len} bytes"
             )));
         }
 
@@ -226,12 +223,12 @@ impl TlsTransport {
 
         let stream = TcpStream::connect(addr).await?;
         let domain = rustls::ServerName::try_from("localhost")
-            .map_err(|e| RatNetError::Transport(format!("Invalid server name: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Invalid server name: {e}")))?;
 
         let tls_stream = connector
             .connect(domain, stream)
             .await
-            .map_err(|e| RatNetError::Transport(format!("TLS connection failed: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("TLS connection failed: {e}")))?;
 
         debug!("Connected to TLS server at {}", addr);
         Ok(tokio_rustls::TlsStream::Client(tls_stream))
@@ -258,7 +255,7 @@ impl TlsTransport {
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .map_err(|e| {
-                RatNetError::Transport(format!("Failed to create TLS server config: {}", e))
+                RatNetError::Transport(format!("Failed to create TLS server config: {e}"))
             })?;
 
         let acceptor = TlsAcceptor::from(Arc::new(config));
@@ -267,7 +264,7 @@ impl TlsTransport {
         let tls_stream = acceptor
             .accept(stream)
             .await
-            .map_err(|e| RatNetError::Transport(format!("TLS accept failed: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("TLS accept failed: {e}")))?;
 
         debug!("TLS connection established");
 
@@ -279,7 +276,7 @@ impl TlsTransport {
     fn parse_certs_static(cert_pem: &[u8]) -> Result<Vec<Certificate>> {
         let mut cursor = std::io::Cursor::new(cert_pem);
         let cert_ders = certs(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse certificates: {e}")))?;
 
         Ok(cert_ders.into_iter().map(Certificate).collect())
     }
@@ -287,7 +284,7 @@ impl TlsTransport {
     fn parse_private_key_static(key_pem: &[u8]) -> Result<PrivateKey> {
         let mut cursor = std::io::Cursor::new(key_pem);
         let keys = pkcs8_private_keys(&mut cursor)
-            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to parse private key: {e}")))?;
 
         if keys.is_empty() {
             return Err(RatNetError::Transport("No private keys found".to_string()));
@@ -354,7 +351,7 @@ impl Transport for TlsTransport {
         // Bind TCP listener
         let listener = TcpListener::bind(&listen)
             .await
-            .map_err(|e| RatNetError::Transport(format!("Failed to bind TLS listener: {}", e)))?;
+            .map_err(|e| RatNetError::Transport(format!("Failed to bind TLS listener: {e}")))?;
 
         self.running.store(true, Ordering::Relaxed);
         info!("TLS transport listening on {}", listen);

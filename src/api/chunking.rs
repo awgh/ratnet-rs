@@ -249,9 +249,9 @@ pub fn generate_stream_id() -> Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::Msg;
+
     use crate::nodes::MemoryNode;
-    use crate::transports::UdpTransport;
+
     use std::sync::Arc;
 
     #[tokio::test]

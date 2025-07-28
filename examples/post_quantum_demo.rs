@@ -101,11 +101,9 @@ async fn demo_kyber_encryption() -> Result<(), Box<dyn std::error::Error>> {
     info!("Public key: {}", pubkey);
 
     // Test encryption and decryption
-    let test_messages = vec![
-        b"Short message".to_vec(),
+    let test_messages = [b"Short message".to_vec(),
         b"Medium length message for testing".to_vec(),
-        b"A longer message that tests the encryption capabilities of the Kyber post-quantum cryptography system".to_vec(),
-    ];
+        b"A longer message that tests the encryption capabilities of the Kyber post-quantum cryptography system".to_vec()];
 
     for (i, message) in test_messages.iter().enumerate() {
         info!("Test {}: Encrypting {} bytes", i + 1, message.len());

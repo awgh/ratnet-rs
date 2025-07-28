@@ -10,7 +10,6 @@ use ratnet::{
 use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 use tracing::{info, Level};
-use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

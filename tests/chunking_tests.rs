@@ -154,7 +154,7 @@ async fn test_complete_chunking_flow() {
     // The result depends on whether we have a complete transport setup
     // In this unit test environment, it might fail due to missing transport
     // but the chunking logic should be exercised
-    println!("Chunking result: {:?}", result);
+    println!("Chunking result: {result:?}");
 }
 
 #[tokio::test]

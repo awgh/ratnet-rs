@@ -6,7 +6,7 @@ use ratnet::{
     database::SqliteDatabase,
     nodes::{DatabaseNode, FilesystemNode, MemoryNode},
     router::DefaultRouter,
-    transports::{MemoryTransport, UdpTransport},
+    transports::UdpTransport,
 };
 use std::sync::Arc;
 use tracing::info;

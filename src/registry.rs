@@ -81,7 +81,7 @@ impl Registry {
             })?;
 
         let factory = self.routers.get(router_type).ok_or_else(|| {
-            RatNetError::NotFound(format!("Router type '{}' not found", router_type))
+            RatNetError::NotFound(format!("Router type '{router_type}' not found"))
         })?;
 
         Ok(factory(config))
@@ -102,7 +102,7 @@ impl Registry {
             })?;
 
         let factory = self.policies.get(policy_type).ok_or_else(|| {
-            RatNetError::NotFound(format!("Policy type '{}' not found", policy_type))
+            RatNetError::NotFound(format!("Policy type '{policy_type}' not found"))
         })?;
 
         Ok(factory(transport, node, config))
@@ -122,7 +122,7 @@ impl Registry {
             })?;
 
         let factory = self.transports.get(transport_type).ok_or_else(|| {
-            RatNetError::NotFound(format!("Transport type '{}' not found", transport_type))
+            RatNetError::NotFound(format!("Transport type '{transport_type}' not found"))
         })?;
 
         Ok(factory(node, config))

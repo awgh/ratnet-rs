@@ -209,16 +209,14 @@ impl PeerTable {
 
     /// Get peer statistics
     pub async fn get_peer_stats(&self, host: &str) -> Option<(i64, i64, i64, i64)> {
-        if let Some(peer) = self.read_peer_table(host).await {
-            Some((
+        self.read_peer_table(host).await.map(|peer| {
+            (
                 peer.last_poll_local.load(Ordering::Relaxed),
                 peer.last_poll_remote.load(Ordering::Relaxed),
                 peer.total_bytes_tx.load(Ordering::Relaxed),
                 peer.total_bytes_rx.load(Ordering::Relaxed),
-            ))
-        } else {
-            None
-        }
+            )
+        })
     }
 
     /// Remove a peer from the table
@@ -304,7 +302,7 @@ mod tests {
                 total_bytes_rx: AtomicI64::new(i * 2048),
                 routing_pub: Some(PubKey::nil()),
             });
-            table.write_peer_table(format!("peer{}", i), peer).await;
+            table.write_peer_table(format!("peer{i}"), peer).await;
         }
 
         assert_eq!(table.get_peers().await.len(), 5);

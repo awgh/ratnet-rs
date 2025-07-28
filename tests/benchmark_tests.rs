@@ -1,5 +1,4 @@
 use ratnet::benchmark::*;
-use std::time::Duration;
 
 #[tokio::test]
 async fn test_benchmark_config_creation() {

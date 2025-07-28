@@ -239,7 +239,7 @@ impl Node for DatabaseNode {
             outbox_msgs
                 .into_iter()
                 .filter(|msg| {
-                    if let Some(ref channel) = msg.channel.as_ref() {
+                    if let Some(channel) = msg.channel.as_ref() {
                         channel_names.contains(channel)
                     } else {
                         true // Include messages without channel
@@ -264,10 +264,7 @@ impl Node for DatabaseNode {
         if let Some(contact) = self.database.get_contact(name).await? {
             Ok(contact)
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Contact '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Contact '{name}' not found")))
         }
     }
 
@@ -288,10 +285,7 @@ impl Node for DatabaseNode {
         if let Some(channel) = self.database.get_channel(name).await? {
             Ok(channel)
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Channel '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Channel '{name}' not found")))
         }
     }
 
@@ -311,10 +305,7 @@ impl Node for DatabaseNode {
         if let Some(privkey) = self.database.get_channel_privkey(name).await? {
             Ok(privkey)
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Channel '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Channel '{name}' not found")))
         }
     }
 
@@ -323,10 +314,7 @@ impl Node for DatabaseNode {
         if let Some(profile) = self.database.get_profile(name).await? {
             Ok(profile)
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Profile '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Profile '{name}' not found")))
         }
     }
 
@@ -353,13 +341,10 @@ impl Node for DatabaseNode {
         if let Some(privkey) = self.database.get_profile_privkey(name).await? {
             // Parse the private key and return the public key
             let keypair = KeyPair::from_string(&privkey)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid private key: {e}")))?;
             Ok(keypair.public_key())
         } else {
-            Err(RatNetError::NotFound(format!(
-                "Profile '{}' not found",
-                name
-            )))
+            Err(RatNetError::NotFound(format!("Profile '{name}' not found")))
         }
     }
 
@@ -368,7 +353,7 @@ impl Node for DatabaseNode {
         if let Some(peer) = self.database.get_peer(name).await? {
             Ok(peer)
         } else {
-            Err(RatNetError::NotFound(format!("Peer '{}' not found", name)))
+            Err(RatNetError::NotFound(format!("Peer '{name}' not found")))
         }
     }
 
