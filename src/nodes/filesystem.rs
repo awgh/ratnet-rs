@@ -34,11 +34,15 @@ pub struct FilesystemNode {
     peers: DashMap<String, Peer>,
 
     // Message channels
+    #[allow(dead_code)]
     in_tx: mpsc::UnboundedSender<Msg>,
+    #[allow(dead_code)]
     in_rx: RwLock<Option<mpsc::UnboundedReceiver<Msg>>>,
     out_tx: mpsc::UnboundedSender<Msg>,
+    #[allow(dead_code)]
     out_rx: RwLock<Option<mpsc::UnboundedReceiver<Msg>>>,
     events_tx: mpsc::UnboundedSender<Event>,
+    #[allow(dead_code)]
     events_rx: RwLock<Option<mpsc::UnboundedReceiver<Event>>>,
 
     // Filesystem storage
@@ -52,6 +56,7 @@ pub struct FilesystemNode {
 #[derive(Debug, Clone)]
 struct StreamInfo {
     total_chunks: u32,
+    #[allow(dead_code)]
     channel_name: String,
     received_chunks: HashMap<u32, bool>,
 }

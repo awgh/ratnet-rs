@@ -29,14 +29,19 @@ pub struct MemoryNode {
     profiles: DashMap<String, ProfilePriv>,
     peers: DashMap<String, Peer>,
     outbox: DashMap<String, Vec<OutboxMsg>>,
+    #[allow(dead_code)]
     bundles: DashMap<String, Bundle>, // Store bundles by routing key
 
     // Message channels
     in_tx: mpsc::UnboundedSender<Msg>,
+    #[allow(dead_code)]
     in_rx: RwLock<Option<mpsc::UnboundedReceiver<Msg>>>,
     out_tx: mpsc::UnboundedSender<Msg>,
+    #[allow(dead_code)]
     out_rx: RwLock<Option<mpsc::UnboundedReceiver<Msg>>>,
+    #[allow(dead_code)]
     events_tx: mpsc::UnboundedSender<Event>,
+    #[allow(dead_code)]
     events_rx: RwLock<Option<mpsc::UnboundedReceiver<Event>>>,
 
     // Streaming support
@@ -245,6 +250,7 @@ impl Node for MemoryNode {
         debug!("Handling message: {}", msg.name);
 
         // Send to in channel
+        #[allow(clippy::redundant_pattern_matching)]
         if let Err(_) = self.in_tx.send(msg) {
             warn!("Failed to send message to in channel");
         }
@@ -258,6 +264,7 @@ impl Node for MemoryNode {
         debug!("Forwarding message: {}", msg.name);
 
         // Send to out channel
+        #[allow(clippy::redundant_pattern_matching)]
         if let Err(_) = self.out_tx.send(msg) {
             return Err(RatNetError::Node("Failed to forward message".to_string()));
         }

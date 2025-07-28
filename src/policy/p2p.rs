@@ -39,11 +39,15 @@ use crate::policy::common::PeerTable;
 #[cfg(feature = "p2p")]
 #[derive(Debug)]
 struct PeerDiscoveryInfo {
+    #[allow(dead_code)]
     name: String,
     address: String,
     port: u16,
+    #[allow(dead_code)]
     priority: u16,
+    #[allow(dead_code)]
     weight: u16,
+    #[allow(dead_code)]
     negotiation_rank: u64,
 }
 
@@ -411,6 +415,7 @@ impl P2PPolicy {
     }
 
     /// Extract DNS name from packet
+    #[allow(clippy::only_used_in_recursion)]
     fn extract_dns_name(&self, data: &[u8], mut offset: usize) -> Result<String> {
         let mut name_parts = Vec::new();
 
