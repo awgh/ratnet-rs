@@ -258,7 +258,7 @@ mod tests {
     async fn test_chunk_size_calculation() {
         let node = Arc::new(MemoryNode::new());
         let chunk_size = calculate_chunk_size(node).await.unwrap();
-        
+
         // Should be reasonable chunk size
         assert!(chunk_size > 0);
         assert!(chunk_size <= DEFAULT_CHUNK_SIZE);

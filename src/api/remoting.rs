@@ -166,10 +166,7 @@ pub fn remote_response_to_bytes(response: &RemoteResponse) -> Result<Bytes> {
             .map(|s| Value::String(s.clone()))
             .unwrap_or(Value::Null),
     )?;
-    serialize(
-        &mut buffer,
-        response.value.as_ref().unwrap_or(&Value::Null),
-    )?;
+    serialize(&mut buffer, response.value.as_ref().unwrap_or(&Value::Null))?;
     Ok(Bytes::from(buffer))
 }
 
@@ -216,7 +213,11 @@ pub fn bytes_bytes_from_bytes(data: &[u8]) -> Result<Vec<Vec<u8>>> {
         Value::Array(arr) => {
             let mut result = Vec::new();
             for item in arr {
-                if let Some(bytes) = item.as_str().map(|s| base64::engine::general_purpose::STANDARD.decode(s).unwrap_or_default()) {
+                if let Some(bytes) = item.as_str().map(|s| {
+                    base64::engine::general_purpose::STANDARD
+                        .decode(s)
+                        .unwrap_or_default()
+                }) {
                     result.push(bytes);
                 }
             }
@@ -294,7 +295,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
         }
         APIType::Bytes => {
             let data = read_lv(r)?;
-            Ok(Value::String(base64::engine::general_purpose::STANDARD.encode(data)))
+            Ok(Value::String(
+                base64::engine::general_purpose::STANDARD.encode(data),
+            ))
         }
         APIType::BytesBytes => {
             let data = read_lv(r)?;
@@ -303,7 +306,9 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let mut result = Vec::new();
             for _ in 0..len {
                 let item_data = read_lv(&mut cursor)?;
-                result.push(Value::String(base64::engine::general_purpose::STANDARD.encode(item_data)));
+                result.push(Value::String(
+                    base64::engine::general_purpose::STANDARD.encode(item_data),
+                ));
             }
             Ok(Value::Array(result))
         }
