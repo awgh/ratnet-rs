@@ -1,0 +1,10 @@
+{
+  "message_count": 5000,
+  "message_size": 2048,
+  "message_delay_ms": 10,
+  "concurrent_senders": 4,
+  "duration_seconds": 120,
+  "node_type": "Database",
+  "transport_type": "Tls",
+  "verbose": true
+} 

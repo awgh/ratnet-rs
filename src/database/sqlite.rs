@@ -1,22 +1,34 @@
 //! SQLite database implementation for RatNet
 
+#[cfg(feature = "sqlite")]
 use async_trait::async_trait;
+#[cfg(feature = "sqlite")]
 use bytes::Bytes;
+#[cfg(feature = "sqlite")]
 use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
+#[cfg(feature = "sqlite")]
 use sqlx::{Row, Sqlite, Transaction};
+#[cfg(feature = "sqlite")]
 use std::path::Path;
+#[cfg(feature = "sqlite")]
 use tracing::{debug, info};
 
+#[cfg(feature = "sqlite")]
 use crate::api::*;
+#[cfg(feature = "sqlite")]
 use crate::crypto::KeyPair;
+#[cfg(feature = "sqlite")]
 use crate::database::{default_migrations, Database, MigrationManager};
+#[cfg(feature = "sqlite")]
 use crate::error::{RatNetError, Result};
 
 /// SQLite database implementation
+#[cfg(feature = "sqlite")]
 pub struct SqliteDatabase {
     pool: SqlitePool,
 }
 
+#[cfg(feature = "sqlite")]
 impl SqliteDatabase {
     /// Create a new SQLite database instance
     pub async fn new(database_url: &str) -> Result<Self> {
@@ -47,6 +59,7 @@ impl SqliteDatabase {
     }
 }
 
+#[cfg(feature = "sqlite")]
 #[async_trait]
 impl Database for SqliteDatabase {
     async fn bootstrap(&self) -> Result<()> {
@@ -543,5 +556,19 @@ impl Database for SqliteDatabase {
 
         debug!("Deleted chunks for stream: {}", stream_id);
         Ok(())
+    }
+}
+
+#[cfg(not(feature = "sqlite"))]
+pub struct SqliteDatabase;
+
+#[cfg(not(feature = "sqlite"))]
+impl SqliteDatabase {
+    pub async fn new(_database_url: &str) -> crate::error::Result<Self> {
+        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+    }
+
+    pub async fn new_memory() -> crate::error::Result<Self> {
+        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
     }
 }

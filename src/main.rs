@@ -5,8 +5,9 @@ use ratnet::{
     nodes::DatabaseNode,
     policy::ServerPolicy,
     router::DefaultRouter,
-    transports::HttpsTransport,
 };
+#[cfg(feature = "https")]
+use ratnet::transports::HttpsTransport;
 use std::sync::Arc;
 use tracing::{error, info};
 use tracing_subscriber;
@@ -68,6 +69,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     ratnet::init();
 
     // Create database
+    #[cfg(feature = "sqlite")]
     let database = Arc::new(
         SqliteDatabase::new(&format!("sqlite://{}", db_file))
             .await
@@ -75,17 +77,22 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     );
 
     // Bootstrap database schema
+    #[cfg(feature = "sqlite")]
     database
         .bootstrap()
         .await
         .expect("Failed to bootstrap database");
 
     // Create database-backed node
+    #[cfg(feature = "sqlite")]
     let node = Arc::new(
         DatabaseNode::new(database.clone())
             .await
             .expect("Failed to create database node"),
     );
+
+    #[cfg(not(feature = "sqlite"))]
+    let node = Arc::new(ratnet::nodes::MemoryNode::new());
 
     // Create router
     let router = Arc::new(DefaultRouter::new());
@@ -95,6 +102,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let (cert_pem, key_pem) = ratnet::crypto::certs::generate_test_cert()?;
 
     // Create transports
+    #[cfg(feature = "https")]
     let public_transport = Arc::new(HttpsTransport::new_with_certs(
         format!("0.0.0.0:{}", public_port),
         cert_pem.clone(),
@@ -102,12 +110,22 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         true,
         node.clone(),
     ));
+    #[cfg(not(feature = "https"))]
+    let public_transport = Arc::new(ratnet::transports::UdpTransport::new(
+        format!("0.0.0.0:{}", public_port),
+    ));
+
+    #[cfg(feature = "https")]
     let admin_transport = Arc::new(HttpsTransport::new_with_certs(
         format!("127.0.0.1:{}", admin_port),
         cert_pem,
         key_pem,
         true,
         node.clone(),
+    ));
+    #[cfg(not(feature = "https"))]
+    let admin_transport = Arc::new(ratnet::transports::UdpTransport::new(
+        format!("127.0.0.1:{}", admin_port),
     ));
 
     // Create policies based on mode

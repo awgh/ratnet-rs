@@ -39,6 +39,7 @@
 //! ```
 
 pub mod api;
+pub mod benchmark;
 pub mod crypto;
 pub mod database;
 pub mod error;

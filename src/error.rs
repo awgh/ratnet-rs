@@ -49,6 +49,9 @@ pub enum RatNetError {
 
     #[error("Not implemented: {0}")]
     NotImplemented(String),
+
+    #[error("Feature not enabled: {0}")]
+    Feature(String),
 }
 
 /// Result type alias for RatNet operations

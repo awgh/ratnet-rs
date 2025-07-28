@@ -1,13 +1,19 @@
 //! Database migration system
 
+#[cfg(feature = "sqlite")]
 use async_trait::async_trait;
+#[cfg(feature = "sqlite")]
 use sqlx::sqlite::SqlitePool;
+#[cfg(feature = "sqlite")]
 use sqlx::Row;
+#[cfg(feature = "sqlite")]
 use tracing::{info, warn};
 
+#[cfg(feature = "sqlite")]
 use crate::error::{RatNetError, Result};
 
 /// Database migration trait
+#[cfg(feature = "sqlite")]
 #[async_trait]
 pub trait Migration: Send + Sync {
     /// Get the migration version number
@@ -28,10 +34,12 @@ pub trait Migration: Send + Sync {
 }
 
 /// Migration manager for database schema versioning
+#[cfg(feature = "sqlite")]
 pub struct MigrationManager {
     migrations: Vec<Box<dyn Migration>>,
 }
 
+#[cfg(feature = "sqlite")]
 impl MigrationManager {
     /// Create a new migration manager
     pub fn new() -> Self {
@@ -112,6 +120,7 @@ impl MigrationManager {
     }
 }
 
+#[cfg(feature = "sqlite")]
 impl Default for MigrationManager {
     fn default() -> Self {
         Self::new()
@@ -119,8 +128,10 @@ impl Default for MigrationManager {
 }
 
 /// Initial schema migration (version 1)
+#[cfg(feature = "sqlite")]
 pub struct InitialMigration;
 
+#[cfg(feature = "sqlite")]
 #[async_trait]
 impl Migration for InitialMigration {
     fn version(&self) -> u32 {
@@ -258,6 +269,53 @@ impl Migration for InitialMigration {
 }
 
 /// Get default migration manager with all built-in migrations
+#[cfg(feature = "sqlite")]
 pub fn default_migrations() -> MigrationManager {
     MigrationManager::new().add_migration(Box::new(InitialMigration))
+}
+
+#[cfg(not(feature = "sqlite"))]
+pub trait Migration: Send + Sync {
+    fn version(&self) -> u32;
+    fn description(&self) -> &str;
+    fn up(&self, _pool: &()) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
+        Box::pin(async {
+            Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+        })
+    }
+    fn down(&self, _pool: &()) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
+        Box::pin(async {
+            Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+        })
+    }
+}
+
+#[cfg(not(feature = "sqlite"))]
+pub struct MigrationManager;
+
+#[cfg(not(feature = "sqlite"))]
+impl MigrationManager {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn add_migration(self, _migration: Box<dyn Migration>) -> Self {
+        self
+    }
+
+    pub async fn migrate(&self, _pool: &()) -> crate::error::Result<()> {
+        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+    }
+}
+
+#[cfg(not(feature = "sqlite"))]
+impl Default for MigrationManager {
+    fn default() -> Self {
+        Self
+    }
+}
+
+#[cfg(not(feature = "sqlite"))]
+pub fn default_migrations() -> MigrationManager {
+    MigrationManager
 }
