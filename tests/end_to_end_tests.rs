@@ -123,9 +123,9 @@ async fn test_cross_node_type_communication() {
         .expect("Failed to send message");
 
     // Clean up
-    memory_node.stop().await;
-    database_node.stop().await;
-    filesystem_node.stop().await;
+    let _ = memory_node.stop().await;
+    let _ = database_node.stop().await;
+    let _ = filesystem_node.stop().await;
 
     if temp_dir.exists() {
         std::fs::remove_dir_all(&temp_dir).expect("Failed to clean temp dir");
@@ -212,9 +212,9 @@ async fn test_cross_transport_communication() {
         .stop()
         .await
         .expect("Failed to stop UDP transport");
-    node1.stop().await;
-    node2.stop().await;
-    node3.stop().await;
+    let _ = node1.stop().await;
+    let _ = node2.stop().await;
+    let _ = node3.stop().await;
 
     info!("Cross-transport communication test completed successfully");
 }
@@ -289,9 +289,9 @@ async fn test_multi_hop_message_routing() {
         .expect("Failed to send message from C");
 
     // Clean up
-    node_a.stop().await;
-    node_b.stop().await;
-    node_c.stop().await;
+    let _ = node_a.stop().await;
+    let _ = node_b.stop().await;
+    let _ = node_c.stop().await;
 
     info!("Multi-hop message routing test completed successfully");
 }
@@ -437,9 +437,9 @@ async fn test_bundle_routing_through_multiple_nodes() {
     );
 
     // Clean up
-    memory_node.stop().await;
-    database_node.stop().await;
-    filesystem_node.stop().await;
+    let _ = memory_node.stop().await;
+    let _ = database_node.stop().await;
+    let _ = filesystem_node.stop().await;
 
     if temp_dir.exists() {
         std::fs::remove_dir_all(&temp_dir).expect("Failed to clean temp dir");
@@ -499,8 +499,8 @@ async fn test_chunked_message_flow_across_nodes() {
     info!("Large chunked message sent successfully");
 
     // Clean up
-    sender_node.stop().await;
-    receiver_node.stop().await;
+    let _ = sender_node.stop().await;
+    let _ = receiver_node.stop().await;
 
     info!("Chunked message flow test completed successfully");
 }
@@ -531,7 +531,7 @@ async fn test_network_partition_recovery() {
 
     // Simulate network partition by stopping node2
     info!("Simulating network partition by stopping node2");
-    node2.stop().await;
+    let _ = node2.stop().await;
 
     // Try to send messages during partition
     let node1_id = node1.id().await.expect("Failed to get node1 ID");
@@ -570,9 +570,9 @@ async fn test_network_partition_recovery() {
         .expect("Failed to send message after recovery");
 
     // Clean up
-    node1.stop().await;
-    node2.stop().await;
-    node3.stop().await;
+    let _ = node1.stop().await;
+    let _ = node2.stop().await;
+    let _ = node3.stop().await;
 
     info!("Network partition and recovery test completed successfully");
 }

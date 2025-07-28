@@ -14,9 +14,8 @@ async fn setup_test_db() -> Arc<SqliteDatabase> {
 
 #[tokio::test]
 async fn test_database_bootstrap() {
-    let db = setup_test_db().await;
+    let _db = setup_test_db().await;
     // If we got here, bootstrap worked
-    assert!(true);
 }
 
 #[tokio::test]

@@ -31,7 +31,7 @@ async fn test_udp_transport_echo() {
         .expect("Failed to start transport2");
 
     // Get their addresses
-    let addr1 = transport1
+    let _addr1 = transport1
         .local_addr()
         .await
         .expect("Failed to get transport1 address");
@@ -89,7 +89,7 @@ async fn test_udp_transport_rpc_communication() {
         .expect("Failed to start transport2");
 
     // Get their addresses
-    let addr1 = transport1
+    let _addr1 = transport1
         .local_addr()
         .await
         .expect("Failed to get transport1 address");
@@ -107,7 +107,7 @@ async fn test_udp_transport_rpc_communication() {
     )];
 
     let response1 = transport1.rpc(&addr2.to_string(), Action::ID, args1).await;
-    let response2 = transport2.rpc(&addr1.to_string(), Action::ID, args2).await;
+    let response2 = transport2.rpc(&_addr1.to_string(), Action::ID, args2).await;
 
     // Both responses should be successful
     assert!(response1.is_ok());
