@@ -39,7 +39,7 @@ impl DatabaseNode {
     /// Load existing keys from database
     async fn load_keys(&self) -> Result<()> {
         // Check if we have content and routing keys stored
-        if let Some(content_key) = self.database.get_config("contentkey").await? {
+        if let Some(_content_key) = self.database.get_config("contentkey").await? {
             debug!("Loaded content key from database");
             // TODO: When crypto is fully implemented, load the actual key
         } else {
@@ -233,7 +233,7 @@ impl Node for DatabaseNode {
         let outbox_msgs = self.database.get_outbox_msgs(last_time).await?;
 
         // Filter by channels if specified
-        let filtered_msgs: Vec<_> = if channel_names.is_empty() {
+        let _filtered_msgs: Vec<_> = if channel_names.is_empty() {
             outbox_msgs
         } else {
             outbox_msgs

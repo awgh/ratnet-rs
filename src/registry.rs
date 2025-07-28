@@ -191,7 +191,7 @@ macro_rules! register_transport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
+    // use serde_json::json; // Unused import - may be needed for future functionality
 
     #[test]
     fn test_registry_creation() {

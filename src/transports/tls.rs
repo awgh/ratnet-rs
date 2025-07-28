@@ -66,6 +66,7 @@ impl TlsTransport {
     }
 
     /// Parse certificates from PEM data
+    #[allow(dead_code)]
     fn parse_certs(&self) -> Result<Vec<Certificate>> {
         let mut cursor = std::io::Cursor::new(&self.cert_pem);
         let cert_ders = certs(&mut cursor)
@@ -75,6 +76,7 @@ impl TlsTransport {
     }
 
     /// Parse private key from PEM data
+    #[allow(dead_code)]
     fn parse_private_key(&self) -> Result<PrivateKey> {
         let mut cursor = std::io::Cursor::new(&self.key_pem);
         let keys = pkcs8_private_keys(&mut cursor)
@@ -88,6 +90,7 @@ impl TlsTransport {
     }
 
     /// Create TLS server config
+    #[allow(dead_code)]
     fn create_server_config(&self) -> Result<ServerConfig> {
         let certs = self.parse_certs()?;
         let key = self.parse_private_key()?;
@@ -112,6 +115,7 @@ impl TlsTransport {
     }
 
     /// Handle incoming TLS connection
+    #[allow(dead_code)]
     async fn handle_connection(
         &self,
         mut stream: TlsStream<TcpStream>,
@@ -164,6 +168,7 @@ impl TlsTransport {
         Ok(())
     }
     // Helper to get Arc<dyn Transport> for node calls
+    #[allow(dead_code)]
     fn clone_arc(&self) -> Arc<dyn Transport> {
         // SAFETY: This is safe because TlsTransport is always behind Arc
         // and implements Transport + Send + Sync
@@ -293,7 +298,7 @@ impl TlsTransport {
 
     async fn handle_connection_internal(
         mut stream: TlsStream<TcpStream>,
-        admin_mode: bool,
+        _admin_mode: bool,
     ) -> Result<()> {
         let mut buffer = vec![0u8; 4096];
 

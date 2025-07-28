@@ -36,7 +36,7 @@ impl Policy for PollPolicy {
 
         info!("Starting poll policy");
 
-        let transport = self.transport.clone();
+        let _transport = self.transport.clone();
         let node = self.node.clone();
         let running = self.running.clone();
 

@@ -26,7 +26,7 @@ pub trait Migration: Send + Sync {
     async fn up(&self, pool: &SqlitePool) -> Result<()>;
 
     /// Rollback the migration (optional)
-    async fn down(&self, pool: &SqlitePool) -> Result<()> {
+    async fn down(&self, _pool: &SqlitePool) -> Result<()> {
         Err(RatNetError::NotImplemented(
             "Migration rollback not implemented".to_string(),
         ))

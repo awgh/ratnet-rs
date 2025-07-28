@@ -26,6 +26,7 @@ pub enum PubKey {
 }
 
 /// Private key types supported by the system
+#[allow(clippy::large_enum_variant)]
 pub enum KeyPair {
     /// Ed25519 key pair with PKCS8 bytes for serialization
     Ed25519 {
@@ -86,16 +87,18 @@ impl PubKey {
         }
 
         if s.starts_with("ed25519:") {
-            let encoded = &s[8..];
+            let encoded = s.strip_prefix("ed25519:").unwrap();
             let bytes = base64::engine::general_purpose::STANDARD
                 .decode(encoded)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key encoding: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key encoding: {e}")))?;
+            let _key_pair = Ed25519KeyPair::from_pkcs8(&bytes)
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key format: {e}")))?;
             Ok(PubKey::Ed25519(bytes))
         } else if s.starts_with("kyber:") {
-            let encoded = &s[6..];
+            let encoded = s.strip_prefix("kyber:").unwrap();
             let bytes = base64::engine::general_purpose::STANDARD
                 .decode(encoded)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber key encoding: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber key encoding: {e}")))?;
             Ok(PubKey::Kyber(bytes))
         } else {
             // Try to parse as base64 Ed25519 key (backward compatibility)
@@ -130,10 +133,10 @@ impl KeyPair {
     pub fn generate_ed25519() -> Result<Self> {
         let rng = ring::rand::SystemRandom::new();
         let pkcs8_doc = Ed25519KeyPair::generate_pkcs8(&rng)
-            .map_err(|e| RatNetError::Crypto(format!("Failed to generate Ed25519 key: {}", e)))?;
+            .map_err(|e| RatNetError::Crypto(format!("Failed to generate Ed25519 key: {e}")))?;
 
         let key_pair = Ed25519KeyPair::from_pkcs8(pkcs8_doc.as_ref())
-            .map_err(|e| RatNetError::Crypto(format!("Failed to parse Ed25519 key: {}", e)))?;
+            .map_err(|e| RatNetError::Crypto(format!("Failed to parse Ed25519 key: {e}")))?;
 
         Ok(KeyPair::Ed25519 {
             key_pair,
@@ -207,23 +210,23 @@ impl KeyPair {
         }
 
         if s.starts_with("ed25519:") {
-            let encoded = &s[8..];
+            let encoded = s.strip_prefix("ed25519:").unwrap();
             let pkcs8_bytes = base64::engine::general_purpose::STANDARD
                 .decode(encoded)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key encoding: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key encoding: {e}")))?;
 
             let key_pair = Ed25519KeyPair::from_pkcs8(pkcs8_bytes.as_ref())
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key format: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Ed25519 key format: {e}")))?;
 
             Ok(KeyPair::Ed25519 {
                 key_pair,
                 pkcs8_bytes,
             })
         } else if s.starts_with("kyber:") {
-            let encoded = &s[6..];
+            let encoded = s.strip_prefix("kyber:").unwrap();
             let key_data = base64::engine::general_purpose::STANDARD
                 .decode(encoded)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber key encoding: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber key encoding: {e}")))?;
 
             // Kyber key data should contain both public and secret keys
             // Format: [public_key_bytes][secret_key_bytes]
@@ -238,9 +241,9 @@ impl KeyPair {
             let secret_key_bytes = &key_data[1568..1568 + 3168];
 
             let public_key = KyberPublicKey::from_bytes(public_key_bytes)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber public key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber public key: {e}")))?;
             let secret_key = KyberSecretKey::from_bytes(secret_key_bytes)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber secret key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber secret key: {e}")))?;
 
             Ok(KeyPair::Kyber {
                 public_key,
@@ -252,7 +255,7 @@ impl KeyPair {
                 Ok(pkcs8_bytes) => {
                     let key_pair =
                         Ed25519KeyPair::from_pkcs8(pkcs8_bytes.as_ref()).map_err(|e| {
-                            RatNetError::Crypto(format!("Invalid Ed25519 key format: {}", e))
+                            RatNetError::Crypto(format!("Invalid Ed25519 key format: {e}"))
                         })?;
                     Ok(KeyPair::Ed25519 {
                         key_pair,
@@ -269,7 +272,7 @@ impl KeyPair {
         match self {
             KeyPair::Ed25519 { pkcs8_bytes, .. } => {
                 let encoded = base64::engine::general_purpose::STANDARD.encode(pkcs8_bytes);
-                Ok(format!("ed25519:{}", encoded))
+                Ok(format!("ed25519:{encoded}"))
             }
             KeyPair::Kyber {
                 public_key,
@@ -281,7 +284,7 @@ impl KeyPair {
                 key_data.extend_from_slice(secret_key.as_bytes());
 
                 let encoded = base64::engine::general_purpose::STANDARD.encode(&key_data);
-                Ok(format!("kyber:{}", encoded))
+                Ok(format!("kyber:{encoded}"))
             }
         }
     }
@@ -301,7 +304,7 @@ pub fn encrypt(pubkey: &PubKey, data: &[u8]) -> Result<Vec<u8>> {
         PubKey::Kyber(public_key_bytes) => {
             // Reconstruct the Kyber public key from bytes
             let public_key = KyberPublicKey::from_bytes(public_key_bytes)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber public key: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber public key: {e}")))?;
 
             // Generate a random symmetric key for AES encryption
             let symmetric_key = random_bytes(32)?; // 256-bit key
@@ -350,7 +353,7 @@ pub fn decrypt(keypair: &KeyPair, data: &[u8]) -> Result<Vec<u8>> {
 
             let ciphertext_bytes = &data[..1568]; // Fixed from 1088 to 1568
             let ciphertext = KyberCiphertext::from_bytes(ciphertext_bytes)
-                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber ciphertext: {}", e)))?;
+                .map_err(|e| RatNetError::Crypto(format!("Invalid Kyber ciphertext: {e}")))?;
 
             let shared_secret = decapsulate(&ciphertext, secret_key);
 
@@ -391,7 +394,7 @@ fn encrypt_aes_gcm(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 
     // Create the sealing key
     let unbound_key = ring::aead::UnboundKey::new(&AES_256_GCM, key)
-        .map_err(|e| RatNetError::Crypto(format!("Invalid AES key: {:?}", e)))?;
+        .map_err(|e| RatNetError::Crypto(format!("Invalid AES key: {e:?}")))?;
     let mut sealing_key = SealingKey::new(
         unbound_key,
         IncrementingNonce {
@@ -403,7 +406,7 @@ fn encrypt_aes_gcm(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
     let mut encrypted_data = data.to_vec();
     sealing_key
         .seal_in_place_append_tag(Aad::empty(), &mut encrypted_data)
-        .map_err(|e| RatNetError::Crypto(format!("AES encryption failed: {:?}", e)))?;
+        .map_err(|e| RatNetError::Crypto(format!("AES encryption failed: {e:?}")))?;
 
     Ok(encrypted_data)
 }
@@ -435,7 +438,7 @@ fn decrypt_aes_gcm(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 
     // Create the opening key
     let unbound_key = ring::aead::UnboundKey::new(&AES_256_GCM, key)
-        .map_err(|e| RatNetError::Crypto(format!("Invalid AES key: {:?}", e)))?;
+        .map_err(|e| RatNetError::Crypto(format!("Invalid AES key: {e:?}")))?;
     let mut opening_key = OpeningKey::new(
         unbound_key,
         IncrementingNonce {
@@ -447,7 +450,7 @@ fn decrypt_aes_gcm(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
     let mut decrypted_data = data.to_vec();
     let decrypted_len = opening_key
         .open_in_place(Aad::empty(), &mut decrypted_data)
-        .map_err(|e| RatNetError::Crypto(format!("AES decryption failed: {:?}", e)))?
+        .map_err(|e| RatNetError::Crypto(format!("AES decryption failed: {e:?}")))?
         .len();
 
     decrypted_data.truncate(decrypted_len);
@@ -474,7 +477,7 @@ pub fn random_bytes(len: usize) -> Result<Vec<u8>> {
     let rng = ring::rand::SystemRandom::new();
     let mut bytes = vec![0u8; len];
     ring::rand::SecureRandom::fill(&rng, &mut bytes)
-        .map_err(|e| RatNetError::Crypto(format!("Random generation failed: {:?}", e)))?;
+        .map_err(|e| RatNetError::Crypto(format!("Random generation failed: {e:?}")))?;
     Ok(bytes)
 }
 

@@ -8,5 +8,5 @@ pub use default::DefaultRouter;
 
 /// Initialize router registrations
 pub fn init() {
-    crate::register_router!("default", |config| { Arc::new(DefaultRouter::new()) });
+    crate::register_router!("default", |_config| { Arc::new(DefaultRouter::new()) });
 }

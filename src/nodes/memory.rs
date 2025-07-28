@@ -104,6 +104,7 @@ impl MemoryNode {
     }
 
     /// Generate a hybrid key pair for routing (Ed25519 for signatures + Kyber for encryption)
+    #[allow(dead_code)]
     async fn ensure_hybrid_routing_keys(&self) -> Result<()> {
         let mut routing_key_guard = self.routing_key.write().await;
         if routing_key_guard.is_none() {
@@ -115,6 +116,7 @@ impl MemoryNode {
     }
 
     /// Generate a hybrid key pair for content (Ed25519 for signatures + Kyber for encryption)
+    #[allow(dead_code)]
     async fn ensure_hybrid_content_keys(&self) -> Result<()> {
         let mut content_key_guard = self.content_key.write().await;
         if content_key_guard.is_none() {
@@ -383,7 +385,7 @@ impl Node for MemoryNode {
 
     async fn admin_rpc(
         &self,
-        transport: Arc<dyn Transport>,
+        _transport: Arc<dyn Transport>,
         call: RemoteCall,
     ) -> Result<RemoteResponse> {
         debug!("Admin RPC call: {:?}", call.action);
@@ -1347,6 +1349,7 @@ impl MemoryNode {
     }
 
     /// Serialize a Msg into outbox message data
+    #[allow(dead_code)]
     async fn serialize_msg_to_outbox(&self, msg: &Msg) -> Result<Bytes> {
         let json_data = serde_json::to_vec(msg).map_err(|e| {
             RatNetError::Serialization(format!("Failed to serialize message: {}", e))

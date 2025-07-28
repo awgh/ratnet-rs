@@ -324,7 +324,7 @@ impl P2PPolicy {
 
             let record_type = u16::from_be_bytes([data[offset], data[offset + 1]]);
             let record_class = u16::from_be_bytes([data[offset + 2], data[offset + 3]]);
-            let ttl = u32::from_be_bytes([
+            let _ttl = u32::from_be_bytes([
                 data[offset + 4],
                 data[offset + 5],
                 data[offset + 6],
@@ -486,6 +486,7 @@ impl P2PPolicy {
     }
 
     /// Advertise this node via mDNS
+    #[allow(dead_code)]
     async fn mdns_advertise(&self) -> Result<()> {
         let socket = {
             let dial_socket = self.dial_socket.lock().await;
@@ -775,7 +776,7 @@ impl Policy for P2PPolicy {
         });
 
         // Start peer synchronization loop
-        let node = self.node.clone();
+        let _node = self.node.clone();
         let peer_table = self.peer_table.clone();
         let is_listening = self.is_listening.clone();
 
@@ -840,6 +841,7 @@ impl Policy for P2PPolicy {
 #[cfg(feature = "p2p")]
 impl P2PPolicy {
     /// Synchronize with discovered peers
+    #[allow(dead_code)]
     async fn sync_with_peers(&self) -> Result<()> {
         let peers = {
             let peer_list = self.peer_list.read().await;
@@ -858,6 +860,7 @@ impl P2PPolicy {
     }
 
     /// Synchronize with a specific peer
+    #[allow(dead_code)]
     async fn sync_with_peer(
         &self,
         peer_key: &str,

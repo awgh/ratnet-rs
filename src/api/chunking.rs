@@ -36,8 +36,7 @@ pub async fn calculate_chunk_size(node: Arc<dyn Node>) -> Result<u32> {
     // Ensure we have enough space for headers and overhead
     if chunk_size <= CHUNK_OVERHEAD + CHUNK_HEADER_SIZE {
         return Err(RatNetError::InvalidArgument(format!(
-            "Transport byte limit {} too small for chunking",
-            chunk_size
+            "Transport byte limit {chunk_size} too small for chunking"
         )));
     }
 
@@ -250,13 +249,19 @@ pub fn generate_stream_id() -> Result<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bytes::Bytes;
+    use crate::api::Msg;
+    use crate::nodes::MemoryNode;
+    use crate::transports::UdpTransport;
+    use std::sync::Arc;
 
     #[tokio::test]
     async fn test_chunk_size_calculation() {
-        // Test that chunk size calculation works
-        let chunk_size = DEFAULT_CHUNK_SIZE - CHUNK_OVERHEAD;
-        assert!(chunk_size > CHUNK_HEADER_SIZE);
+        let node = Arc::new(MemoryNode::new());
+        let chunk_size = calculate_chunk_size(node).await.unwrap();
+        
+        // Should be reasonable chunk size
+        assert!(chunk_size > 0);
+        assert!(chunk_size <= DEFAULT_CHUNK_SIZE);
     }
 
     #[test]
@@ -282,7 +287,7 @@ mod tests {
         };
 
         assert_eq!(whole_chunks, 12); // 100000 / 8192 = 12
-        assert_eq!(remainder, 1696); // 100000 % 8192 = 1696 (not 1856)
+        assert_eq!(remainder, 1696); // 100000 % 8192 = 1696
         assert_eq!(total_chunks, 13); // 12 + 1 = 13
     }
 }

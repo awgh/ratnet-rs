@@ -158,6 +158,7 @@ impl FilesystemNode {
     }
 
     /// Load data from filesystem
+    #[allow(dead_code)]
     async fn load_messages(&self, last_time: i64, max_bytes: i64) -> Result<Vec<(i64, Vec<u8>)>> {
         let mut messages = Vec::new();
         let mut bytes_read = 0i64;
@@ -197,6 +198,7 @@ impl FilesystemNode {
     }
 
     /// Load messages from a specific channel
+    #[allow(dead_code)]
     async fn load_channel_messages(
         &self,
         channel_name: &str,
@@ -244,6 +246,7 @@ impl FilesystemNode {
         Ok(messages)
     }
 
+    #[allow(dead_code)]
     async fn reassemble_stream(&self, stream_id: u32) -> Result<Vec<u8>> {
         if let Some(stream_info) = self.streams.get(&stream_id) {
             let mut complete_data = Vec::new();
@@ -612,10 +615,10 @@ impl Node for FilesystemNode {
 
     async fn pickup(
         &self,
-        routing_pub: PubKey,
+        _routing_pub: PubKey,
         last_time: i64,
         max_bytes: i64,
-        channel_names: Vec<String>,
+        _channel_names: Vec<String>,
     ) -> Result<Bundle> {
         use std::collections::BTreeMap;
         use tokio::fs;
@@ -1217,7 +1220,7 @@ impl Node for FilesystemNode {
                 }
 
                 // Parse routing public key
-                let routing_pub_str = match &call.args[0] {
+                let _routing_pub_str = match &call.args[0] {
                     serde_json::Value::String(s) => s,
                     _ => return Ok(RemoteResponse::error("Invalid argument type".to_string())),
                 };

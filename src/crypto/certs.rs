@@ -112,7 +112,7 @@ pub fn validate_cert_chain(cert_chain: &[u8]) -> Result<bool> {
 
     // Check if certificate is not expired (simplified check)
     // In a real implementation, you'd parse the certificate and check dates
-    let now = SystemTime::now();
+    let _now = SystemTime::now();
 
     // For now, assume valid if it's a recent certificate
     // This is a simplified approach - in production you'd parse the actual dates

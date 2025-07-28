@@ -1,5 +1,6 @@
 //! RPC protocol types and serialization
 
+use base64::Engine;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
@@ -167,7 +168,7 @@ pub fn remote_response_to_bytes(response: &RemoteResponse) -> Result<Bytes> {
     )?;
     serialize(
         &mut buffer,
-        &response.value.as_ref().unwrap_or(&Value::Null),
+        response.value.as_ref().unwrap_or(&Value::Null),
     )?;
     Ok(Bytes::from(buffer))
 }
@@ -200,7 +201,7 @@ pub fn bytes_bytes_to_bytes(bba: &[Vec<u8>]) -> Result<Bytes> {
     let mut buffer = Vec::new();
     let bba_value = Value::Array(
         bba.iter()
-            .map(|bytes| Value::String(base64::encode(bytes)))
+            .map(|bytes| Value::String(base64::engine::general_purpose::STANDARD.encode(bytes)))
             .collect(),
     );
     serialize(&mut buffer, &bba_value)?;
@@ -215,7 +216,7 @@ pub fn bytes_bytes_from_bytes(data: &[u8]) -> Result<Vec<Vec<u8>>> {
         Value::Array(arr) => {
             let mut result = Vec::new();
             for item in arr {
-                if let Some(bytes) = item.as_str().map(|s| base64::decode(s).unwrap_or_default()) {
+                if let Some(bytes) = item.as_str().map(|s| base64::engine::general_purpose::STANDARD.decode(s).unwrap_or_default()) {
                     result.push(bytes);
                 }
             }
@@ -293,7 +294,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
         }
         APIType::Bytes => {
             let data = read_lv(r)?;
-            Ok(Value::String(base64::encode(data)))
+            Ok(Value::String(base64::engine::general_purpose::STANDARD.encode(data)))
         }
         APIType::BytesBytes => {
             let data = read_lv(r)?;
@@ -302,7 +303,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let mut result = Vec::new();
             for _ in 0..len {
                 let item_data = read_lv(&mut cursor)?;
-                result.push(Value::String(base64::encode(item_data)));
+                result.push(Value::String(base64::engine::general_purpose::STANDARD.encode(item_data)));
             }
             Ok(Value::Array(result))
         }
@@ -490,7 +491,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let mut bundle = serde_json::Map::new();
             bundle.insert(
                 "data".to_string(),
-                Value::String(base64::encode(bundle_data)),
+                Value::String(base64::engine::general_purpose::STANDARD.encode(bundle_data)),
             );
             bundle.insert(
                 "time".to_string(),
@@ -509,6 +510,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
 }
 
 /// Write TLV (Type-Length-Value) format
+#[allow(dead_code)]
 fn write_tlv(w: &mut Vec<u8>, typ: APIType, value: &[u8]) -> Result<()> {
     w.write_u8(typ as u8)?;
     if typ != APIType::Nil {

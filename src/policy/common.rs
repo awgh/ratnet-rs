@@ -98,7 +98,7 @@ impl PeerTable {
                         });
                         self.write_peer_table(host.to_string(), updated_peer.clone())
                             .await;
-                        let peer = updated_peer;
+                        let _peer = updated_peer;
                     } else {
                         error!("Failed to deserialize remote routing key");
                         return Err(RatNetError::Serialization(
@@ -234,7 +234,7 @@ impl PeerTable {
     }
 
     /// Add a discovered peer to the table
-    pub async fn add_peer(&self, key: String, address: String, port: u16) {
+    pub async fn add_peer(&self, key: String, _address: String, _port: u16) {
         let peer = Arc::new(PeerInfo {
             last_poll_local: AtomicI64::new(0),
             last_poll_remote: AtomicI64::new(0),

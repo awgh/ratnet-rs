@@ -64,6 +64,7 @@ impl DefaultRouter {
     }
 
     /// Handle stream header message
+    #[allow(dead_code)]
     async fn handle_stream_header(&self, node: Arc<dyn Node>, data: &[u8]) -> Result<()> {
         if data.len() < 9 {
             return Err(RatNetError::Serialization(
@@ -95,6 +96,7 @@ impl DefaultRouter {
     }
 
     /// Handle chunk message
+    #[allow(dead_code)]
     async fn handle_chunk(&self, node: Arc<dyn Node>, data: &[u8]) -> Result<()> {
         if data.len() < 8 {
             return Err(RatNetError::Serialization(
@@ -318,7 +320,7 @@ impl JSON for DefaultRouter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio_test;
+    // use tokio_test; // Unused import - may be needed for future testing
 
     #[test]
     fn test_extract_channel_name() {

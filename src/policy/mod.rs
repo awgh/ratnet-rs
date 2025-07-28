@@ -20,7 +20,7 @@ pub fn init() {
         Arc::new(PollPolicy::new(transport, node))
     });
 
-    crate::register_policy!("server", |transport, node, config| {
+    crate::register_policy!("server", |transport, _node, config| {
         let listen_uri = config
             .get("listen_uri")
             .and_then(|v| v.as_str())

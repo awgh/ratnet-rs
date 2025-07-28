@@ -42,7 +42,7 @@ impl UdpTransport {
 
 #[async_trait]
 impl Transport for UdpTransport {
-    async fn listen(&self, listen: String, admin_mode: bool) -> Result<()> {
+    async fn listen(&self, listen: String, _admin_mode: bool) -> Result<()> {
         if self.running.load(Ordering::Relaxed) {
             return Err(RatNetError::Transport(
                 "Transport already running".to_string(),
@@ -395,7 +395,7 @@ impl JSON for UdpTransport {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio_test;
+    // use tokio_test; // Unused import - may be needed for future testing
 
     #[tokio::test]
     async fn test_udp_transport_creation() {
