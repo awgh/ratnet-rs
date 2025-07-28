@@ -4,7 +4,7 @@ use bytes::Bytes;
 use ratnet::api::{
     Action, Bundle, Channel, Contact, KeyPair, Msg, Peer, PubKey, RemoteCall, RemoteResponse,
 };
-use ratnet::api::{Node, Transport};
+use ratnet::api::Node;
 use ratnet::nodes::MemoryNode;
 use ratnet::prelude::{
     args_from_bytes, args_to_bytes, remote_call_from_bytes, remote_call_to_bytes,

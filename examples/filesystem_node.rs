@@ -74,7 +74,7 @@ async fn test_basic_operations(
     info!("✓ Node is running");
 
     // Test router
-    let router = node.router();
+    let _router = node.router();
     info!("✓ Router initialized");
 
     // Test policies
