@@ -1,8 +1,8 @@
+use ratnet::api::{Policy, JSON};
 #[cfg(not(feature = "p2p"))]
 use ratnet::policy::p2p::P2PPolicy;
 #[cfg(feature = "p2p")]
 use ratnet::policy::P2PPolicy;
-use ratnet::api::{Policy, JSON};
 use ratnet::transports::MemoryTransport;
 use std::sync::Arc;
 use std::time::Duration;
@@ -58,7 +58,7 @@ async fn test_p2p_policy_stub_behavior() {
         Err(e) => {
             let error_msg = e.to_string();
             assert!(error_msg.contains("P2P feature not enabled"));
-        },
+        }
         Ok(_) => panic!("Expected error from from_json, got Ok"),
     }
 }
@@ -79,7 +79,7 @@ async fn test_p2p_policy_stub_negotiation_rank() {
     let original_rank = policy.negotiation_rank();
     policy.reroll_negotiation_rank();
     let new_rank = policy.negotiation_rank();
-    
+
     // In stub implementation, reroll_negotiation_rank is a no-op
     assert_eq!(original_rank, new_rank);
     assert_eq!(original_rank, 1);
@@ -137,7 +137,10 @@ async fn test_p2p_policy_start_stop_real() {
         assert!(!policy.is_advertising());
     } else {
         // If starting failed (likely due to socket binding), that's okay for tests
-        println!("P2P policy start failed (expected in test environment): {:?}", start_result);
+        println!(
+            "P2P policy start failed (expected in test environment): {:?}",
+            start_result
+        );
     }
 }
 
@@ -176,11 +179,13 @@ async fn test_p2p_dns_packet_creation() {
     );
 
     // Test DNS packet creation
-    let packet = policy.create_mdns_advertisement_packet("test://127.0.0.1:8080", 12345).unwrap();
-    
+    let packet = policy
+        .create_mdns_advertisement_packet("test://127.0.0.1:8080", 12345)
+        .unwrap();
+
     // Verify packet structure
     assert!(packet.len() >= 12); // DNS header
-    
+
     // Check DNS header
     assert_eq!(packet[0..2], [0x00, 0x00]); // Transaction ID
     assert_eq!(packet[2..4], [0x84, 0x00]); // Flags (response, authoritative)
@@ -203,7 +208,7 @@ async fn test_p2p_peer_discovery() {
 
     // Create a mock DNS packet for testing
     let mut test_packet = Vec::new();
-    
+
     // DNS header
     test_packet.extend_from_slice(&[
         0x00, 0x00, // Transaction ID
@@ -218,7 +223,8 @@ async fn test_p2p_peer_discovery() {
     // Name: rn.746573743a2f2f3132372e302e302e313a38303830.local
     test_packet.extend_from_slice(&[
         0x02, 0x72, 0x6e, // "rn"
-        0x1e, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x2f, 0x2f, 0x31, 0x32, 0x37, 0x2e, 0x30, 0x2e, 0x30, 0x2e, 0x31, 0x3a, 0x38, 0x30, 0x38, 0x30, // encoded address
+        0x1e, 0x74, 0x65, 0x73, 0x74, 0x3a, 0x2f, 0x2f, 0x31, 0x32, 0x37, 0x2e, 0x30, 0x2e, 0x30,
+        0x2e, 0x31, 0x3a, 0x38, 0x30, 0x38, 0x30, // encoded address
         0x05, 0x6c, 0x6f, 0x63, 0x61, 0x6c, // "local"
         0x00, // null terminator
         0x00, 0x21, // SRV type
@@ -236,4 +242,4 @@ async fn test_p2p_peer_discovery() {
     // Process the packet
     let result = policy.process_mdns_packet(&test_packet).await;
     assert!(result.is_ok());
-} 
+}

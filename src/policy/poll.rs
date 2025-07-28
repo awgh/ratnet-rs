@@ -33,27 +33,27 @@ impl Policy for PollPolicy {
         if self.running.swap(true, Ordering::Relaxed) {
             return Ok(()); // Already running
         }
-        
+
         info!("Starting poll policy");
-        
+
         let transport = self.transport.clone();
         let node = self.node.clone();
         let running = self.running.clone();
-        
+
         tokio::spawn(async move {
             let mut ticker = interval(Duration::from_secs(30)); // Poll every 30 seconds
-            
+
             while running.load(Ordering::Relaxed) {
                 ticker.tick().await;
-                
+
                 debug!("Poll policy tick");
-                
+
                 // In a full implementation, this would:
                 // 1. Get list of peers from the node
                 // 2. Contact each peer to pickup messages
                 // 3. Process any received messages
                 // 4. Send any pending messages
-                
+
                 if let Ok(peers) = node.get_peers(None).await {
                     for peer in peers.iter().filter(|p| p.enabled) {
                         debug!("Would poll peer: {}", peer.name);
@@ -61,20 +61,20 @@ impl Policy for PollPolicy {
                     }
                 }
             }
-            
+
             info!("Poll policy stopped");
         });
-        
+
         Ok(())
     }
-    
+
     async fn stop(&self) -> Result<()> {
         info!("Stopping poll policy");
         self.running.store(false, Ordering::Relaxed);
         Ok(())
     }
-    
+
     fn get_transport(&self) -> Arc<dyn Transport> {
         self.transport.clone()
     }
-} 
+}

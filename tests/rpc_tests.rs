@@ -1,13 +1,19 @@
 //! Comprehensive RPC tests for the RatNet implementation
 
-use ratnet::api::{Action, RemoteCall, RemoteResponse, Channel, Contact, Peer, Profile, PubKey, KeyPair, Msg, Bundle};
-use ratnet::nodes::MemoryNode;
-use ratnet::transports::MemoryTransport;
+use bytes::Bytes;
+use ratnet::api::{
+    Action, Bundle, Channel, Contact, KeyPair, Msg, Peer, Profile, PubKey, RemoteCall,
+    RemoteResponse,
+};
 use ratnet::api::{Node, Transport};
-use ratnet::prelude::{args_to_bytes, args_from_bytes, remote_call_to_bytes, remote_call_from_bytes, remote_response_to_bytes, remote_response_from_bytes};
+use ratnet::nodes::MemoryNode;
+use ratnet::prelude::{
+    args_from_bytes, args_to_bytes, remote_call_from_bytes, remote_call_to_bytes,
+    remote_response_from_bytes, remote_response_to_bytes,
+};
+use ratnet::transports::MemoryTransport;
 use serde_json::Value;
 use std::sync::Arc;
-use bytes::Bytes;
 
 #[tokio::test]
 async fn test_binary_serialization_roundtrip() {
@@ -17,14 +23,20 @@ async fn test_binary_serialization_roundtrip() {
         (Value::Number(serde_json::Number::from(42i64)), "int64"),
         (Value::Number(serde_json::Number::from(123u64)), "uint64"),
         (Value::String("hello world".to_string()), "string"),
-        (Value::Array(vec![Value::String("a".to_string()), Value::String("b".to_string())]), "array"),
+        (
+            Value::Array(vec![
+                Value::String("a".to_string()),
+                Value::String("b".to_string()),
+            ]),
+            "array",
+        ),
     ];
 
     for (value, description) in test_cases {
         let args = vec![value.clone()];
         let serialized = args_to_bytes(&args).expect("Failed to serialize");
         let deserialized = args_from_bytes(&serialized).expect("Failed to deserialize");
-        
+
         assert_eq!(args, deserialized, "Roundtrip failed for {}", description);
     }
 }
@@ -46,9 +58,10 @@ async fn test_remote_call_serialization() {
 #[tokio::test]
 async fn test_remote_response_serialization() {
     let response = RemoteResponse::success(Value::String("test result".to_string()));
-    
+
     let serialized = remote_response_to_bytes(&response).expect("Failed to serialize response");
-    let deserialized = remote_response_from_bytes(&serialized).expect("Failed to deserialize response");
+    let deserialized =
+        remote_response_from_bytes(&serialized).expect("Failed to deserialize response");
 
     assert_eq!(response.error, deserialized.error);
     assert_eq!(response.value, deserialized.value);
@@ -57,9 +70,10 @@ async fn test_remote_response_serialization() {
 #[tokio::test]
 async fn test_error_response_serialization() {
     let response = RemoteResponse::error("test error".to_string());
-    
+
     let serialized = remote_response_to_bytes(&response).expect("Failed to serialize response");
-    let deserialized = remote_response_from_bytes(&serialized).expect("Failed to deserialize response");
+    let deserialized =
+        remote_response_from_bytes(&serialized).expect("Failed to deserialize response");
 
     assert_eq!(response.error, deserialized.error);
     assert_eq!(response.value, deserialized.value);
@@ -69,21 +83,24 @@ async fn test_error_response_serialization() {
 async fn test_public_rpc_id() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     let call = RemoteCall {
         action: Action::ID,
         args: vec![],
     };
 
-    let response = node.public_rpc(transport, call).await.expect("RPC call failed");
-    
+    let response = node
+        .public_rpc(transport, call)
+        .await
+        .expect("RPC call failed");
+
     // Should succeed and return a public key
     assert!(!response.is_err());
     assert!(response.value.is_some());
-    
+
     let binding = response.value.unwrap();
     let pubkey_str = binding.as_str().expect("Expected string");
     assert!(!pubkey_str.is_empty());
@@ -93,21 +110,24 @@ async fn test_public_rpc_id() {
 async fn test_admin_rpc_cid() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     let call = RemoteCall {
         action: Action::CID,
         args: vec![],
     };
 
-    let response = node.admin_rpc(transport, call).await.expect("RPC call failed");
-    
+    let response = node
+        .admin_rpc(transport, call)
+        .await
+        .expect("RPC call failed");
+
     // Should succeed and return a content key
     assert!(!response.is_err());
     assert!(response.value.is_some());
-    
+
     let binding = response.value.unwrap();
     let pubkey_str = binding.as_str().expect("Expected string");
     assert!(!pubkey_str.is_empty());
@@ -117,10 +137,10 @@ async fn test_admin_rpc_cid() {
 async fn test_admin_rpc_contact_management() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     // Add a contact
     let add_call = RemoteCall {
         action: Action::AddContact,
@@ -130,7 +150,10 @@ async fn test_admin_rpc_contact_management() {
         ],
     };
 
-    let add_response = node.admin_rpc(transport.clone(), add_call).await.expect("RPC call failed");
+    let add_response = node
+        .admin_rpc(transport.clone(), add_call)
+        .await
+        .expect("RPC call failed");
     assert!(!add_response.is_err());
 
     // Get the contact
@@ -139,12 +162,16 @@ async fn test_admin_rpc_contact_management() {
         args: vec![Value::String("test_contact".to_string())],
     };
 
-    let get_response = node.admin_rpc(transport.clone(), get_call).await.expect("RPC call failed");
+    let get_response = node
+        .admin_rpc(transport.clone(), get_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_response.is_err());
-    
+
     let contact_value = get_response.value.expect("Expected value");
-    let contact: Contact = serde_json::from_value(contact_value).expect("Failed to deserialize contact");
-    
+    let contact: Contact =
+        serde_json::from_value(contact_value).expect("Failed to deserialize contact");
+
     assert_eq!(contact.name, "test_contact");
     assert_eq!(contact.pubkey, "test_pubkey");
 
@@ -154,12 +181,16 @@ async fn test_admin_rpc_contact_management() {
         args: vec![],
     };
 
-    let get_all_response = node.admin_rpc(transport.clone(), get_all_call).await.expect("RPC call failed");
+    let get_all_response = node
+        .admin_rpc(transport.clone(), get_all_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_all_response.is_err());
-    
+
     let contacts_value = get_all_response.value.expect("Expected value");
-    let contacts: Vec<Contact> = serde_json::from_value(contacts_value).expect("Failed to deserialize contacts");
-    
+    let contacts: Vec<Contact> =
+        serde_json::from_value(contacts_value).expect("Failed to deserialize contacts");
+
     assert_eq!(contacts.len(), 1);
     assert_eq!(contacts[0].name, "test_contact");
 
@@ -169,7 +200,10 @@ async fn test_admin_rpc_contact_management() {
         args: vec![Value::String("test_contact".to_string())],
     };
 
-    let delete_response = node.admin_rpc(transport, delete_call).await.expect("RPC call failed");
+    let delete_response = node
+        .admin_rpc(transport, delete_call)
+        .await
+        .expect("RPC call failed");
     assert!(!delete_response.is_err());
 }
 
@@ -177,14 +211,14 @@ async fn test_admin_rpc_contact_management() {
 async fn test_admin_rpc_channel_management() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     // Add a channel
     let keypair = KeyPair::generate_ed25519().expect("Failed to generate keypair");
     let privkey_str = keypair.to_string().expect("Failed to serialize keypair");
-    
+
     let add_call = RemoteCall {
         action: Action::AddChannel,
         args: vec![
@@ -193,7 +227,10 @@ async fn test_admin_rpc_channel_management() {
         ],
     };
 
-    let add_response = node.admin_rpc(transport.clone(), add_call).await.expect("RPC call failed");
+    let add_response = node
+        .admin_rpc(transport.clone(), add_call)
+        .await
+        .expect("RPC call failed");
     assert!(!add_response.is_err());
 
     // Get the channel
@@ -202,12 +239,16 @@ async fn test_admin_rpc_channel_management() {
         args: vec![Value::String("test_channel".to_string())],
     };
 
-    let get_response = node.admin_rpc(transport.clone(), get_call).await.expect("RPC call failed");
+    let get_response = node
+        .admin_rpc(transport.clone(), get_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_response.is_err());
-    
+
     let channel_value = get_response.value.expect("Expected value");
-    let channel: Channel = serde_json::from_value(channel_value).expect("Failed to deserialize channel");
-    
+    let channel: Channel =
+        serde_json::from_value(channel_value).expect("Failed to deserialize channel");
+
     assert_eq!(channel.name, "test_channel");
     assert!(!channel.pubkey.is_empty());
 
@@ -217,12 +258,16 @@ async fn test_admin_rpc_channel_management() {
         args: vec![],
     };
 
-    let get_all_response = node.admin_rpc(transport.clone(), get_all_call).await.expect("RPC call failed");
+    let get_all_response = node
+        .admin_rpc(transport.clone(), get_all_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_all_response.is_err());
-    
+
     let channels_value = get_all_response.value.expect("Expected value");
-    let channels: Vec<Channel> = serde_json::from_value(channels_value).expect("Failed to deserialize channels");
-    
+    let channels: Vec<Channel> =
+        serde_json::from_value(channels_value).expect("Failed to deserialize channels");
+
     assert_eq!(channels.len(), 1);
     assert_eq!(channels[0].name, "test_channel");
 
@@ -232,7 +277,10 @@ async fn test_admin_rpc_channel_management() {
         args: vec![Value::String("test_channel".to_string())],
     };
 
-    let delete_response = node.admin_rpc(transport, delete_call).await.expect("RPC call failed");
+    let delete_response = node
+        .admin_rpc(transport, delete_call)
+        .await
+        .expect("RPC call failed");
     assert!(!delete_response.is_err());
 }
 
@@ -240,10 +288,10 @@ async fn test_admin_rpc_channel_management() {
 async fn test_admin_rpc_peer_management() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     // Add a peer
     let add_call = RemoteCall {
         action: Action::AddPeer,
@@ -255,7 +303,10 @@ async fn test_admin_rpc_peer_management() {
         ],
     };
 
-    let add_response = node.admin_rpc(transport.clone(), add_call).await.expect("RPC call failed");
+    let add_response = node
+        .admin_rpc(transport.clone(), add_call)
+        .await
+        .expect("RPC call failed");
     assert!(!add_response.is_err());
 
     // Get the peer
@@ -264,12 +315,15 @@ async fn test_admin_rpc_peer_management() {
         args: vec![Value::String("test_peer".to_string())],
     };
 
-    let get_response = node.admin_rpc(transport.clone(), get_call).await.expect("RPC call failed");
+    let get_response = node
+        .admin_rpc(transport.clone(), get_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_response.is_err());
-    
+
     let peer_value = get_response.value.expect("Expected value");
     let peer: Peer = serde_json::from_value(peer_value).expect("Failed to deserialize peer");
-    
+
     assert_eq!(peer.name, "test_peer");
     assert_eq!(peer.uri, "test://uri");
     assert_eq!(peer.group, "test_group");
@@ -281,12 +335,16 @@ async fn test_admin_rpc_peer_management() {
         args: vec![],
     };
 
-    let get_all_response = node.admin_rpc(transport.clone(), get_all_call).await.expect("RPC call failed");
+    let get_all_response = node
+        .admin_rpc(transport.clone(), get_all_call)
+        .await
+        .expect("RPC call failed");
     assert!(!get_all_response.is_err());
-    
+
     let peers_value = get_all_response.value.expect("Expected value");
-    let peers: Vec<Peer> = serde_json::from_value(peers_value).expect("Failed to deserialize peers");
-    
+    let peers: Vec<Peer> =
+        serde_json::from_value(peers_value).expect("Failed to deserialize peers");
+
     assert_eq!(peers.len(), 1);
     assert_eq!(peers[0].name, "test_peer");
 
@@ -296,7 +354,10 @@ async fn test_admin_rpc_peer_management() {
         args: vec![Value::String("test_peer".to_string())],
     };
 
-    let delete_response = node.admin_rpc(transport, delete_call).await.expect("RPC call failed");
+    let delete_response = node
+        .admin_rpc(transport, delete_call)
+        .await
+        .expect("RPC call failed");
     assert!(!delete_response.is_err());
 }
 
@@ -304,10 +365,10 @@ async fn test_admin_rpc_peer_management() {
 async fn test_admin_rpc_send_msg() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     // Create a test message
     let msg = Msg {
         name: "test_message".to_string(),
@@ -319,14 +380,17 @@ async fn test_admin_rpc_send_msg() {
     };
 
     let msg_value = serde_json::to_value(&msg).expect("Failed to serialize message");
-    
+
     let call = RemoteCall {
         action: Action::SendMsg,
         args: vec![msg_value],
     };
 
-    let response = node.admin_rpc(transport, call).await.expect("RPC call failed");
-    
+    let response = node
+        .admin_rpc(transport, call)
+        .await
+        .expect("RPC call failed");
+
     // Should succeed
     assert!(!response.is_err());
 }
@@ -335,10 +399,10 @@ async fn test_admin_rpc_send_msg() {
 async fn test_public_rpc_pickup_dropoff() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Start the node
     node.start().await.expect("Failed to start node");
-    
+
     // Create a test message
     let test_msg = Msg {
         name: "test_channel".to_string(),
@@ -348,7 +412,7 @@ async fn test_public_rpc_pickup_dropoff() {
         chunked: false,
         stream_header: false,
     };
-    
+
     // Create a bundle with the test message
     let messages = vec![test_msg];
     let bundle_data = serde_json::to_vec(&messages).expect("Failed to serialize messages");
@@ -358,14 +422,17 @@ async fn test_public_rpc_pickup_dropoff() {
     };
 
     let bundle_value = serde_json::to_value(&bundle).expect("Failed to serialize bundle");
-    
+
     // Dropoff the bundle
     let dropoff_call = RemoteCall {
         action: Action::Dropoff,
         args: vec![bundle_value],
     };
 
-    let dropoff_response = node.public_rpc(transport.clone(), dropoff_call).await.expect("RPC call failed");
+    let dropoff_response = node
+        .public_rpc(transport.clone(), dropoff_call)
+        .await
+        .expect("RPC call failed");
     assert!(!dropoff_response.is_err());
 
     // Send a message to the outbox
@@ -377,17 +444,27 @@ async fn test_public_rpc_pickup_dropoff() {
         chunked: false,
         stream_header: false,
     };
-    
-    node.send_msg(outbox_msg).await.expect("Failed to send message");
+
+    node.send_msg(outbox_msg)
+        .await
+        .expect("Failed to send message");
 
     // Get the node's public key for pickup
     let id_call = RemoteCall {
         action: Action::ID,
         args: vec![],
     };
-    let id_response = node.public_rpc(transport.clone(), id_call).await.expect("RPC call failed");
+    let id_response = node
+        .public_rpc(transport.clone(), id_call)
+        .await
+        .expect("RPC call failed");
     assert!(!id_response.is_err());
-    let node_pubkey = id_response.value.expect("Expected value").as_str().expect("Expected string").to_string();
+    let node_pubkey = id_response
+        .value
+        .expect("Expected value")
+        .as_str()
+        .expect("Expected string")
+        .to_string();
 
     // Pickup messages from the test channel
     let pickup_call = RemoteCall {
@@ -400,17 +477,22 @@ async fn test_public_rpc_pickup_dropoff() {
         ],
     };
 
-    let pickup_response = node.public_rpc(transport, pickup_call).await.expect("RPC call failed");
+    let pickup_response = node
+        .public_rpc(transport, pickup_call)
+        .await
+        .expect("RPC call failed");
     assert!(!pickup_response.is_err());
-    
+
     let pickup_bundle_value = pickup_response.value.expect("Expected value");
-    let pickup_bundle: Bundle = serde_json::from_value(pickup_bundle_value).expect("Failed to deserialize bundle");
-    
+    let pickup_bundle: Bundle =
+        serde_json::from_value(pickup_bundle_value).expect("Failed to deserialize bundle");
+
     // The bundle should contain the message from the outbox
     assert!(!pickup_bundle.data.is_empty());
-    
+
     // Deserialize the bundle data to verify it contains our message
-    let messages: Vec<Msg> = serde_json::from_slice(&pickup_bundle.data).expect("Failed to deserialize bundle messages");
+    let messages: Vec<Msg> =
+        serde_json::from_slice(&pickup_bundle.data).expect("Failed to deserialize bundle messages");
     assert_eq!(messages.len(), 1);
     assert_eq!(messages[0].name, "test_channel");
     assert_eq!(messages[0].content, Bytes::from("outbox data"));
@@ -420,14 +502,17 @@ async fn test_public_rpc_pickup_dropoff() {
 async fn test_error_handling() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Test invalid action
     let call = RemoteCall {
         action: Action::Null,
         args: vec![],
     };
 
-    let response = node.admin_rpc(transport, call).await.expect("RPC call failed");
+    let response = node
+        .admin_rpc(transport, call)
+        .await
+        .expect("RPC call failed");
     assert!(response.is_err());
     assert!(response.error.unwrap().contains("Unknown admin action"));
 }
@@ -436,14 +521,17 @@ async fn test_error_handling() {
 async fn test_invalid_arguments() {
     let node = MemoryNode::new();
     let transport = Arc::new(MemoryTransport::new());
-    
+
     // Test missing arguments
     let call = RemoteCall {
         action: Action::GetContact,
         args: vec![], // Missing required argument
     };
 
-    let response = node.admin_rpc(transport, call).await.expect("RPC call failed");
+    let response = node
+        .admin_rpc(transport, call)
+        .await
+        .expect("RPC call failed");
     assert!(response.is_err());
     assert!(response.error.unwrap().contains("Invalid argument count"));
-} 
+}

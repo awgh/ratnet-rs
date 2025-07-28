@@ -1,9 +1,9 @@
-    //! Node implementations
+//! Node implementations
 
-pub mod memory;
 pub mod database;
 pub mod filesystem;
+pub mod memory;
 
-pub use memory::MemoryNode;
 pub use database::DatabaseNode;
-pub use filesystem::FilesystemNode; 
+pub use filesystem::FilesystemNode;
+pub use memory::MemoryNode;

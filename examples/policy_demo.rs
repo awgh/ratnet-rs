@@ -1,5 +1,5 @@
 //! Policy demonstration example
-//! 
+//!
 //! This example shows how to use the different policy types:
 //! - Server policy: Simple listen-only policy
 //! - P2P policy: Peer-to-peer discovery with mDNS
@@ -10,7 +10,7 @@ use tracing_subscriber;
 
 use ratnet::api::{Node, Policy, JSON};
 use ratnet::nodes::MemoryNode;
-use ratnet::policy::{ServerPolicy, P2PPolicy};
+use ratnet::policy::{P2PPolicy, ServerPolicy};
 use ratnet::router::DefaultRouter;
 use ratnet::transports::UdpTransport;
 
@@ -74,14 +74,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             p2p_transport.clone(),
             "127.0.0.1:8081".to_string(),
             node.clone(),
-            false, // admin_mode
+            false,                   // admin_mode
             Duration::from_secs(30), // listen_interval
             Duration::from_secs(10), // advertise_interval
         ));
 
         println!("   P2P Policy Configuration:");
         println!("   - Listen Interval: {:?}", p2p_policy.listen_interval());
-        println!("   - Advertise Interval: {:?}", p2p_policy.advertise_interval());
+        println!(
+            "   - Advertise Interval: {:?}",
+            p2p_policy.advertise_interval()
+        );
         println!("   - Negotiation Rank: {}", p2p_policy.negotiation_rank());
         println!("   - Running: {}", p2p_policy.is_listening());
 
@@ -104,7 +107,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("   - Advertising: {}", p2p_policy.is_advertising());
             }
             Err(e) => {
-                println!("   P2P policy start failed (expected in some environments): {:?}", e);
+                println!(
+                    "   P2P policy start failed (expected in some environments): {:?}",
+                    e
+                );
                 println!("   This is normal in test environments where socket binding may be restricted.");
             }
         }
@@ -145,4 +151,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("\n=== Demo Complete ===");
     Ok(())
-} 
+}

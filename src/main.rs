@@ -3,19 +3,19 @@ use ratnet::prelude::*;
 use ratnet::{
     database::{Database, SqliteDatabase},
     nodes::DatabaseNode,
+    policy::ServerPolicy,
     router::DefaultRouter,
     transports::HttpsTransport,
-    policy::ServerPolicy,
 };
 use std::sync::Arc;
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
     tracing_subscriber::fmt::init();
-    
+
     // Parse command line arguments
     let matches = App::new("ratnet")
         .version("1.0")
@@ -26,7 +26,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 .long("dbfile")
                 .value_name("FILE")
                 .help("Database file path")
-                .default_value("ratnet.db")
+                .default_value("ratnet.db"),
         )
         .arg(
             Arg::with_name("public-port")
@@ -34,7 +34,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 .long("public-port")
                 .value_name("PORT")
                 .help("HTTPS Public Port")
-                .default_value("20001")
+                .default_value("20001"),
         )
         .arg(
             Arg::with_name("admin-port")
@@ -42,7 +42,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 .long("admin-port")
                 .value_name("PORT")
                 .help("HTTPS Admin Port")
-                .default_value("20002")
+                .default_value("20002"),
         )
         .arg(
             Arg::with_name("mode")
@@ -50,7 +50,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 .long("mode")
                 .value_name("MODE")
                 .help("Server mode: 'server' or 'p2p'")
-                .default_value("server")
+                .default_value("server"),
         )
         .get_matches();
 
@@ -71,17 +71,20 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let database = Arc::new(
         SqliteDatabase::new(&format!("sqlite://{}", db_file))
             .await
-            .expect("Failed to create database")
+            .expect("Failed to create database"),
     );
 
     // Bootstrap database schema
-    database.bootstrap().await.expect("Failed to bootstrap database");
+    database
+        .bootstrap()
+        .await
+        .expect("Failed to bootstrap database");
 
     // Create database-backed node
     let node = Arc::new(
         DatabaseNode::new(database.clone())
             .await
-            .expect("Failed to create database node")
+            .expect("Failed to create database node"),
     );
 
     // Create router
@@ -160,13 +163,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     // Keep the application running
     info!("RatNet server is running. Press Ctrl+C to stop.");
-    
+
     // Wait for shutdown signal
     tokio::signal::ctrl_c().await?;
     info!("Shutting down RatNet server...");
-    
+
     node.stop().await?;
     info!("RatNet server stopped.");
 
     Ok(())
-} 
+}

@@ -10,20 +10,23 @@ use tokio::sync::mpsc;
 use crate::error::Result;
 
 pub mod actions;
+pub mod chunking;
 pub mod crypto;
 pub mod remoting;
-pub mod chunking;
 
 pub use actions::*;
+pub use chunking::*;
 pub use crypto::*;
 pub use remoting::*;
-pub use chunking::*;
 
 /// Core message type for RatNet
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Msg {
     pub name: String,
-    #[serde(serialize_with = "serialize_bytes", deserialize_with = "deserialize_bytes")]
+    #[serde(
+        serialize_with = "serialize_bytes",
+        deserialize_with = "deserialize_bytes"
+    )]
     pub content: Bytes,
     pub is_chan: bool,
     pub pubkey: PubKey,
@@ -34,7 +37,10 @@ pub struct Msg {
 /// Bundle of messages for batch operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bundle {
-    #[serde(serialize_with = "serialize_bytes", deserialize_with = "deserialize_bytes")]
+    #[serde(
+        serialize_with = "serialize_bytes",
+        deserialize_with = "deserialize_bytes"
+    )]
     pub data: Bytes,
     pub time: i64,
 }
@@ -90,7 +96,10 @@ pub struct Peer {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutboxMsg {
     pub channel: Option<String>,
-    #[serde(serialize_with = "serialize_bytes", deserialize_with = "deserialize_bytes")]
+    #[serde(
+        serialize_with = "serialize_bytes",
+        deserialize_with = "deserialize_bytes"
+    )]
     pub msg: Bytes,
     pub timestamp: i64,
 }
@@ -122,7 +131,10 @@ pub struct StreamHeader {
 pub struct Chunk {
     pub stream_id: u32,
     pub chunk_num: u32,
-    #[serde(serialize_with = "serialize_bytes", deserialize_with = "deserialize_bytes")]
+    #[serde(
+        serialize_with = "serialize_bytes",
+        deserialize_with = "deserialize_bytes"
+    )]
     pub data: Bytes,
 }
 
@@ -165,7 +177,12 @@ pub trait Node: Send + Sync {
     async fn forward(&self, msg: Msg) -> Result<()>;
 
     // Chunking support
-    async fn add_stream(&self, stream_id: u32, total_chunks: u32, channel_name: String) -> Result<()>;
+    async fn add_stream(
+        &self,
+        stream_id: u32,
+        total_chunks: u32,
+        channel_name: String,
+    ) -> Result<()>;
     async fn add_chunk(&self, stream_id: u32, chunk_num: u32, data: Bytes) -> Result<()>;
     async fn check_stream_complete(&self, stream_id: u32) -> Result<()>;
 
@@ -175,11 +192,17 @@ pub trait Node: Send + Sync {
     // Public API
     async fn id(&self) -> Result<PubKey>;
     async fn dropoff(&self, bundle: Bundle) -> Result<()>;
-    async fn pickup(&self, routing_pub: PubKey, last_time: i64, max_bytes: i64, channel_names: Vec<String>) -> Result<Bundle>;
+    async fn pickup(
+        &self,
+        routing_pub: PubKey,
+        last_time: i64,
+        max_bytes: i64,
+        channel_names: Vec<String>,
+    ) -> Result<Bundle>;
 
     // Admin API
     async fn cid(&self) -> Result<PubKey>;
-    
+
     // Contact management
     async fn get_contact(&self, name: &str) -> Result<Contact>;
     async fn get_contacts(&self) -> Result<Vec<Contact>>;
@@ -203,15 +226,29 @@ pub trait Node: Send + Sync {
     // Peer management
     async fn get_peer(&self, name: &str) -> Result<Peer>;
     async fn get_peers(&self, group: Option<String>) -> Result<Vec<Peer>>;
-    async fn add_peer(&self, name: String, enabled: bool, uri: String, group: Option<String>) -> Result<()>;
+    async fn add_peer(
+        &self,
+        name: String,
+        enabled: bool,
+        uri: String,
+        group: Option<String>,
+    ) -> Result<()>;
     async fn delete_peer(&self, name: &str) -> Result<()>;
 
     // Message sending
     async fn send_msg(&self, msg: Msg) -> Result<()>;
 
     // RPC handling
-    async fn admin_rpc(&self, transport: Arc<dyn Transport>, call: RemoteCall) -> Result<RemoteResponse>;
-    async fn public_rpc(&self, transport: Arc<dyn Transport>, call: RemoteCall) -> Result<RemoteResponse>;
+    async fn admin_rpc(
+        &self,
+        transport: Arc<dyn Transport>,
+        call: RemoteCall,
+    ) -> Result<RemoteResponse>;
+    async fn public_rpc(
+        &self,
+        transport: Arc<dyn Transport>,
+        call: RemoteCall,
+    ) -> Result<RemoteResponse>;
 }
 
 /// Transport trait for network communication
@@ -219,16 +256,21 @@ pub trait Node: Send + Sync {
 pub trait Transport: Send + Sync {
     async fn listen(&self, listen: String, admin_mode: bool) -> Result<()>;
     fn name(&self) -> &str;
-    async fn rpc(&self, host: &str, method: Action, args: Vec<serde_json::Value>) -> Result<serde_json::Value>;
+    async fn rpc(
+        &self,
+        host: &str,
+        method: Action,
+        args: Vec<serde_json::Value>,
+    ) -> Result<serde_json::Value>;
     async fn stop(&self) -> Result<()>;
-    
+
     fn byte_limit(&self) -> i64;
     fn set_byte_limit(&self, limit: i64);
     fn is_running(&self) -> bool;
 }
 
 /// Router trait for message routing
-#[async_trait] 
+#[async_trait]
 pub trait Router: Send + Sync + std::fmt::Debug {
     async fn route(&self, node: Arc<dyn Node>, msg: Bytes) -> Result<()>;
     fn patch(&self, patch: Patch);
@@ -264,4 +306,4 @@ where
 {
     let vec: Vec<u8> = serde_bytes::deserialize(deserializer)?;
     Ok(Bytes::from(vec))
-} 
+}

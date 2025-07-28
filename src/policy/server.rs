@@ -1,5 +1,5 @@
 //! Server policy implementation
-//! 
+//!
 //! The Server policy is a simple listen-only connection policy that starts
 //! a transport in server mode and keeps it running until stopped.
 
@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 use crate::api::{Policy, Transport, JSON};
 use crate::error::Result;
@@ -53,12 +53,16 @@ impl ServerPolicy {
 #[async_trait]
 impl Policy for ServerPolicy {
     async fn run_policy(&self) -> Result<()> {
-        if self.running.compare_exchange(false, true, Ordering::SeqCst, Ordering::Relaxed).is_err() {
+        if self
+            .running
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::Relaxed)
+            .is_err()
+        {
             return Ok(()); // Already running
         }
 
         info!("Starting server policy on {}", self.listen_uri);
-        
+
         // Start listening on the transport
         let transport = self.transport.clone();
         let listen_uri = self.listen_uri.clone();
@@ -75,16 +79,20 @@ impl Policy for ServerPolicy {
     }
 
     async fn stop(&self) -> Result<()> {
-        if !self.running.compare_exchange(true, false, Ordering::SeqCst, Ordering::Relaxed).is_ok() {
+        if !self
+            .running
+            .compare_exchange(true, false, Ordering::SeqCst, Ordering::Relaxed)
+            .is_ok()
+        {
             return Ok(()); // Already stopped
         }
 
         info!("Stopping server policy");
-        
+
         // Stop the transport
         let _lock = self.transport_mutex.lock().await;
         self.transport.stop().await?;
-        
+
         debug!("Server policy stopped successfully");
         Ok(())
     }
@@ -109,7 +117,7 @@ impl JSON for ServerPolicy {
         // Note: This would require transport deserialization which is complex
         // For now, use the constructor with appropriate transport
         Err(crate::error::RatNetError::NotImplemented(
-            "ServerPolicy deserialization not yet implemented".to_string()
+            "ServerPolicy deserialization not yet implemented".to_string(),
         ))
     }
 }
@@ -171,4 +179,4 @@ mod tests {
         assert!(json.contains("127.0.0.1:8080"));
         assert!(json.contains("true")); // admin_mode
     }
-} 
+}

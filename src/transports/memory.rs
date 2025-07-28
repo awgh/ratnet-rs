@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::Arc;
 
 use crate::api::{Action, Transport};
-use crate::error::{Result, RatNetError};
+use crate::error::{RatNetError, Result};
 
 /// Memory transport for testing
 pub struct MemoryTransport {
@@ -62,4 +62,4 @@ impl Transport for MemoryTransport {
     fn is_running(&self) -> bool {
         self.running.load(Ordering::SeqCst)
     }
-} 
+}

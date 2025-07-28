@@ -8,12 +8,12 @@ use serde::{Deserialize, Serialize};
 pub enum Action {
     // Null action (0)
     Null = 0,
-    
+
     // Public API actions (1-15)
     ID = 1,
     Dropoff = 2,
     Pickup = 3,
-    
+
     // Admin API actions (16+)
     CID = 16,
     GetContact = 17,
@@ -36,7 +36,7 @@ pub enum Action {
     Send = 34,
     SendChannel = 35,
     SendMsg = 36,
-    
+
     // Additional actions
     FlushOutbox = 40,
     GetChannelPrivKey = 41,
@@ -87,4 +87,4 @@ impl From<Action> for u8 {
     fn from(action: Action) -> Self {
         action as u8
     }
-} 
+}

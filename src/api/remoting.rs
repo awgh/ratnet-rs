@@ -1,13 +1,13 @@
 //! RPC protocol types and serialization
 
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::io::{Cursor, Read, Write};
-use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use crate::api::{Action, Channel, Contact, Peer, Profile};
-use crate::error::{Result, RatNetError};
+use crate::error::{RatNetError, Result};
 
 /// Remote procedure call structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,7 +31,7 @@ impl RemoteResponse {
             value: Some(value),
         }
     }
-    
+
     /// Create an error response
     pub fn error(error: String) -> Self {
         Self {
@@ -39,12 +39,12 @@ impl RemoteResponse {
             value: None,
         }
     }
-    
+
     /// Check if this response is nil
     pub fn is_nil(&self) -> bool {
         self.value.is_none()
     }
-    
+
     /// Check if this response is an error
     pub fn is_err(&self) -> bool {
         self.error.is_some()
@@ -63,20 +63,20 @@ pub enum APIType {
     Bytes = 0x5,
     BytesBytes = 0x6,
     InterfaceArray = 0x7,
-    
+
     PubKeyECC = 0x10,
     PubKeyRSA = 0x11,
-    
+
     ContactArray = 0x20,
     ChannelArray = 0x21,
     ProfileArray = 0x22,
     PeerArray = 0x23,
-    
+
     Contact = 0x30,
     Channel = 0x31,
     Profile = 0x32,
     Peer = 0x33,
-    
+
     Bundle = 0x40,
 }
 
@@ -127,14 +127,14 @@ pub fn args_from_bytes(data: &[u8]) -> Result<Vec<Value>> {
 /// Convert a RemoteCall to bytes
 pub fn remote_call_to_bytes(call: &RemoteCall) -> Result<Bytes> {
     let mut buffer = Vec::new();
-    
+
     // Action - first byte
     buffer.write_u8(call.action as u8)?;
-    
+
     // Args - serialize and append
     let args_bytes = args_to_bytes(&call.args)?;
     buffer.extend_from_slice(&args_bytes);
-    
+
     Ok(Bytes::from(buffer))
 }
 
@@ -143,44 +143,66 @@ pub fn remote_call_from_bytes(data: &[u8]) -> Result<RemoteCall> {
     if data.len() < 2 {
         return Err(RatNetError::Serialization("Input too short".to_string()));
     }
-    
+
     let action = Action::from(data[0]);
     let args = if data.len() > 1 {
         args_from_bytes(&data[1..])?
     } else {
         Vec::new()
     };
-    
+
     Ok(RemoteCall { action, args })
 }
 
 /// Convert a RemoteResponse to bytes
 pub fn remote_response_to_bytes(response: &RemoteResponse) -> Result<Bytes> {
     let mut buffer = Vec::new();
-    serialize(&mut buffer, &response.error.as_ref().map(|s| Value::String(s.clone())).unwrap_or(Value::Null))?;
-    serialize(&mut buffer, &response.value.as_ref().unwrap_or(&Value::Null))?;
+    serialize(
+        &mut buffer,
+        &response
+            .error
+            .as_ref()
+            .map(|s| Value::String(s.clone()))
+            .unwrap_or(Value::Null),
+    )?;
+    serialize(
+        &mut buffer,
+        &response.value.as_ref().unwrap_or(&Value::Null),
+    )?;
     Ok(Bytes::from(buffer))
 }
 
 /// Convert bytes to a RemoteResponse
 pub fn remote_response_from_bytes(data: &[u8]) -> Result<RemoteResponse> {
     let mut cursor = Cursor::new(data);
-    
+
     // Read error string
     let error = deserialize(&mut cursor)?;
-    let error = if error == Value::Null { None } else { Some(error.as_str().unwrap_or("").to_string()) };
-    
+    let error = if error == Value::Null {
+        None
+    } else {
+        Some(error.as_str().unwrap_or("").to_string())
+    };
+
     // Read value
     let value = deserialize(&mut cursor)?;
-    let value = if value == Value::Null { None } else { Some(value) };
-    
+    let value = if value == Value::Null {
+        None
+    } else {
+        Some(value)
+    };
+
     Ok(RemoteResponse { error, value })
 }
 
 /// Convert array of byte arrays to bytes
 pub fn bytes_bytes_to_bytes(bba: &[Vec<u8>]) -> Result<Bytes> {
     let mut buffer = Vec::new();
-    let bba_value = Value::Array(bba.iter().map(|bytes| Value::String(base64::encode(bytes))).collect());
+    let bba_value = Value::Array(
+        bba.iter()
+            .map(|bytes| Value::String(base64::encode(bytes)))
+            .collect(),
+    );
     serialize(&mut buffer, &bba_value)?;
     Ok(Bytes::from(buffer))
 }
@@ -217,7 +239,9 @@ fn serialize(w: &mut Vec<u8>, v: &Value) -> Result<()> {
                 w.write_u8(APIType::Uint64 as u8)?;
                 w.write_u64::<BigEndian>(u)?;
             } else {
-                return Err(RatNetError::Serialization("Unsupported number type".to_string()));
+                return Err(RatNetError::Serialization(
+                    "Unsupported number type".to_string(),
+                ));
             }
         }
         Value::String(s) => {
@@ -236,8 +260,9 @@ fn serialize(w: &mut Vec<u8>, v: &Value) -> Result<()> {
         }
         _ => {
             // For other types, serialize as JSON string
-            let json_str = serde_json::to_string(v)
-                .map_err(|e| RatNetError::Serialization(format!("JSON serialization failed: {}", e)))?;
+            let json_str = serde_json::to_string(v).map_err(|e| {
+                RatNetError::Serialization(format!("JSON serialization failed: {}", e))
+            })?;
             w.write_u8(APIType::String as u8)?;
             write_lv(w, json_str.as_bytes())?;
         }
@@ -249,7 +274,7 @@ fn serialize(w: &mut Vec<u8>, v: &Value) -> Result<()> {
 fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
     let typ = r.read_u8()?;
     let api_type = APIType::from(typ);
-    
+
     match api_type {
         APIType::Nil => Ok(Value::Null),
         APIType::Int64 => {
@@ -301,7 +326,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let pubkey = String::from_utf8(pubkey_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
-            
+
             let mut contact = serde_json::Map::new();
             contact.insert("name".to_string(), Value::String(name));
             contact.insert("pubkey".to_string(), Value::String(pubkey));
@@ -319,7 +344,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let pubkey = String::from_utf8(pubkey_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
-                
+
                 let mut contact = serde_json::Map::new();
                 contact.insert("name".to_string(), Value::String(name));
                 contact.insert("pubkey".to_string(), Value::String(pubkey));
@@ -336,7 +361,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let pubkey = String::from_utf8(pubkey_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
-            
+
             let mut channel = serde_json::Map::new();
             channel.insert("name".to_string(), Value::String(name));
             channel.insert("pubkey".to_string(), Value::String(pubkey));
@@ -354,7 +379,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let pubkey = String::from_utf8(pubkey_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
-                
+
                 let mut channel = serde_json::Map::new();
                 channel.insert("name".to_string(), Value::String(name));
                 channel.insert("pubkey".to_string(), Value::String(pubkey));
@@ -368,13 +393,13 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let name_data = read_lv(&mut cursor)?;
             let pubkey_data = read_lv(&mut cursor)?;
             let enabled_byte = cursor.read_u8()?;
-            
+
             let name = String::from_utf8(name_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let pubkey = String::from_utf8(pubkey_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let enabled = enabled_byte == 1;
-            
+
             let mut profile = serde_json::Map::new();
             profile.insert("name".to_string(), Value::String(name));
             profile.insert("pubkey".to_string(), Value::String(pubkey));
@@ -390,13 +415,13 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let name_data = read_lv(&mut cursor)?;
                 let pubkey_data = read_lv(&mut cursor)?;
                 let enabled_byte = cursor.read_u8()?;
-                
+
                 let name = String::from_utf8(name_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let pubkey = String::from_utf8(pubkey_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let enabled = enabled_byte == 1;
-                
+
                 let mut profile = serde_json::Map::new();
                 profile.insert("name".to_string(), Value::String(name));
                 profile.insert("pubkey".to_string(), Value::String(pubkey));
@@ -412,7 +437,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let group_data = read_lv(&mut cursor)?;
             let uri_data = read_lv(&mut cursor)?;
             let enabled_byte = cursor.read_u8()?;
-            
+
             let name = String::from_utf8(name_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let group = String::from_utf8(group_data)
@@ -420,7 +445,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let uri = String::from_utf8(uri_data)
                 .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
             let enabled = enabled_byte == 1;
-            
+
             let mut peer = serde_json::Map::new();
             peer.insert("name".to_string(), Value::String(name));
             peer.insert("group".to_string(), Value::String(group));
@@ -438,7 +463,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let group_data = read_lv(&mut cursor)?;
                 let uri_data = read_lv(&mut cursor)?;
                 let enabled_byte = cursor.read_u8()?;
-                
+
                 let name = String::from_utf8(name_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let group = String::from_utf8(group_data)
@@ -446,7 +471,7 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
                 let uri = String::from_utf8(uri_data)
                     .map_err(|e| RatNetError::Serialization(format!("Invalid UTF-8: {}", e)))?;
                 let enabled = enabled_byte == 1;
-                
+
                 let mut peer = serde_json::Map::new();
                 peer.insert("name".to_string(), Value::String(name));
                 peer.insert("group".to_string(), Value::String(group));
@@ -461,10 +486,16 @@ fn deserialize(r: &mut Cursor<&[u8]>) -> Result<Value> {
             let mut cursor = Cursor::new(data.as_slice());
             let bundle_data = read_lv(&mut cursor)?;
             let time = cursor.read_i64::<BigEndian>()?;
-            
+
             let mut bundle = serde_json::Map::new();
-            bundle.insert("data".to_string(), Value::String(base64::encode(bundle_data)));
-            bundle.insert("time".to_string(), Value::Number(serde_json::Number::from(time)));
+            bundle.insert(
+                "data".to_string(),
+                Value::String(base64::encode(bundle_data)),
+            );
+            bundle.insert(
+                "time".to_string(),
+                Value::Number(serde_json::Number::from(time)),
+            );
             Ok(Value::Object(bundle))
         }
         _ => {
@@ -521,24 +552,24 @@ fn varint_decode(r: &mut Cursor<&[u8]>) -> Result<(u64, usize)> {
     let mut result = 0u64;
     let mut shift = 0u32;
     let mut bytes_read = 0usize;
-    
+
     loop {
         let byte = r.read_u8()?;
         bytes_read += 1;
-        
+
         if shift >= 64 {
             return Err(RatNetError::Serialization("Varint overflow".to_string()));
         }
-        
+
         result |= ((byte & 0x7F) as u64) << shift;
-        
+
         if (byte & 0x80) == 0 {
             break;
         }
-        
+
         shift += 7;
     }
-    
+
     Ok((result, bytes_read))
 }
 
@@ -546,29 +577,29 @@ fn varint_decode(r: &mut Cursor<&[u8]>) -> Result<(u64, usize)> {
 pub fn read_buffer(reader: &mut dyn Read) -> Result<Vec<u8>> {
     let mut len_buf = [0u8; 10];
     let mut len_bytes = 0;
-    
+
     // Read varint length
     loop {
         let byte = reader.read_u8()?;
         len_buf[len_bytes] = byte;
         len_bytes += 1;
-        
+
         if (byte & 0x80) == 0 {
             break;
         }
-        
+
         if len_bytes >= 10 {
             return Err(RatNetError::Serialization("Varint too long".to_string()));
         }
     }
-    
+
     let mut cursor = Cursor::new(&len_buf[..len_bytes]);
     let (rlen, _) = varint_decode(&mut cursor)?;
-    
+
     // Read the actual data
     let mut buf = vec![0u8; rlen as usize];
     reader.read_exact(&mut buf)?;
-    
+
     Ok(buf)
 }
 
@@ -583,7 +614,9 @@ pub fn write_buffer(writer: &mut dyn Write, data: &[u8]) -> Result<()> {
 /// Helper trait for JSON serialization
 pub trait JSON {
     fn to_json(&self) -> Result<String>;
-    fn from_json(json: &str) -> Result<Self> where Self: Sized;
+    fn from_json(json: &str) -> Result<Self>
+    where
+        Self: Sized;
 }
 
 /// Implement JSON trait for common types
@@ -591,7 +624,7 @@ impl JSON for Value {
     fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).map_err(Into::into)
     }
-    
+
     fn from_json(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(Into::into)
     }
@@ -601,7 +634,7 @@ impl JSON for Contact {
     fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).map_err(Into::into)
     }
-    
+
     fn from_json(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(Into::into)
     }
@@ -611,7 +644,7 @@ impl JSON for Channel {
     fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).map_err(Into::into)
     }
-    
+
     fn from_json(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(Into::into)
     }
@@ -621,7 +654,7 @@ impl JSON for Profile {
     fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).map_err(Into::into)
     }
-    
+
     fn from_json(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(Into::into)
     }
@@ -631,8 +664,8 @@ impl JSON for Peer {
     fn to_json(&self) -> Result<String> {
         serde_json::to_string(self).map_err(Into::into)
     }
-    
+
     fn from_json(json: &str) -> Result<Self> {
         serde_json::from_str(json).map_err(Into::into)
     }
-} 
+}
