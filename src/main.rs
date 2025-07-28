@@ -1,13 +1,13 @@
 use clap::{App, Arg};
 use ratnet::prelude::*;
+#[cfg(feature = "https")]
+use ratnet::transports::HttpsTransport;
 use ratnet::{
     database::{Database, SqliteDatabase},
     nodes::DatabaseNode,
     policy::ServerPolicy,
     router::DefaultRouter,
 };
-#[cfg(feature = "https")]
-use ratnet::transports::HttpsTransport;
 use std::sync::Arc;
 use tracing::{error, info};
 use tracing_subscriber;
@@ -111,9 +111,10 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         node.clone(),
     ));
     #[cfg(not(feature = "https"))]
-    let public_transport = Arc::new(ratnet::transports::UdpTransport::new(
-        format!("0.0.0.0:{}", public_port),
-    ));
+    let public_transport = Arc::new(ratnet::transports::UdpTransport::new(format!(
+        "0.0.0.0:{}",
+        public_port
+    )));
 
     #[cfg(feature = "https")]
     let admin_transport = Arc::new(HttpsTransport::new_with_certs(
@@ -124,9 +125,10 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         node.clone(),
     ));
     #[cfg(not(feature = "https"))]
-    let admin_transport = Arc::new(ratnet::transports::UdpTransport::new(
-        format!("127.0.0.1:{}", admin_port),
-    ));
+    let admin_transport = Arc::new(ratnet::transports::UdpTransport::new(format!(
+        "127.0.0.1:{}",
+        admin_port
+    )));
 
     // Create policies based on mode
     let policies: Vec<Arc<dyn Policy>> = match mode {

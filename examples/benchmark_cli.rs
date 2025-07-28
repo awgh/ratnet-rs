@@ -7,69 +7,92 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = App::new("RatNet-rs Benchmark Tool")
         .version("1.0")
         .about("Benchmark RatNet-rs performance with different configurations")
-        .subcommand(SubCommand::with_name("quick")
-            .about("Run a quick benchmark")
-            .arg(Arg::with_name("node-type")
-                .short('n')
-                .long("node-type")
-                .value_name("TYPE")
-                .help("Node type: memory, database, filesystem")
-                .takes_value(true)
-                .default_value("memory"))
-            .arg(Arg::with_name("transport")
-                .short('t')
-                .long("transport")
-                .value_name("TRANSPORT")
-                .help("Transport type: udp, tls, https")
-                .takes_value(true)
-                .default_value("udp"))
-            .arg(Arg::with_name("messages")
-                .short('m')
-                .long("messages")
-                .value_name("COUNT")
-                .help("Number of messages to send")
-                .takes_value(true)
-                .default_value("1000"))
-            .arg(Arg::with_name("size")
-                .short('s')
-                .long("size")
-                .value_name("BYTES")
-                .help("Message size in bytes")
-                .takes_value(true)
-                .default_value("1024")))
-        .subcommand(SubCommand::with_name("comprehensive")
-            .about("Run comprehensive benchmark suite"))
-        .subcommand(SubCommand::with_name("custom")
-            .about("Run custom benchmark with detailed configuration")
-            .arg(Arg::with_name("config")
-                .short('c')
-                .long("config")
-                .value_name("FILE")
-                .help("Configuration file (JSON)")
-                .takes_value(true)
-                .required(true))
-            .arg(Arg::with_name("output")
-                .short('o')
-                .long("output")
-                .value_name("FILE")
-                .help("Output file for results")
-                .takes_value(true)))
-        .subcommand(SubCommand::with_name("stress")
-            .about("Run stress test with high load")
-            .arg(Arg::with_name("duration")
-                .short('d')
-                .long("duration")
-                .value_name("SECONDS")
-                .help("Test duration in seconds")
-                .takes_value(true)
-                .default_value("300"))
-            .arg(Arg::with_name("concurrent")
-                .short('c')
-                .long("concurrent")
-                .value_name("COUNT")
-                .help("Number of concurrent senders")
-                .takes_value(true)
-                .default_value("10")))
+        .subcommand(
+            SubCommand::with_name("quick")
+                .about("Run a quick benchmark")
+                .arg(
+                    Arg::with_name("node-type")
+                        .short('n')
+                        .long("node-type")
+                        .value_name("TYPE")
+                        .help("Node type: memory, database, filesystem")
+                        .takes_value(true)
+                        .default_value("memory"),
+                )
+                .arg(
+                    Arg::with_name("transport")
+                        .short('t')
+                        .long("transport")
+                        .value_name("TRANSPORT")
+                        .help("Transport type: udp, tls, https")
+                        .takes_value(true)
+                        .default_value("udp"),
+                )
+                .arg(
+                    Arg::with_name("messages")
+                        .short('m')
+                        .long("messages")
+                        .value_name("COUNT")
+                        .help("Number of messages to send")
+                        .takes_value(true)
+                        .default_value("1000"),
+                )
+                .arg(
+                    Arg::with_name("size")
+                        .short('s')
+                        .long("size")
+                        .value_name("BYTES")
+                        .help("Message size in bytes")
+                        .takes_value(true)
+                        .default_value("1024"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("comprehensive").about("Run comprehensive benchmark suite"),
+        )
+        .subcommand(
+            SubCommand::with_name("custom")
+                .about("Run custom benchmark with detailed configuration")
+                .arg(
+                    Arg::with_name("config")
+                        .short('c')
+                        .long("config")
+                        .value_name("FILE")
+                        .help("Configuration file (JSON)")
+                        .takes_value(true)
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("output")
+                        .short('o')
+                        .long("output")
+                        .value_name("FILE")
+                        .help("Output file for results")
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("stress")
+                .about("Run stress test with high load")
+                .arg(
+                    Arg::with_name("duration")
+                        .short('d')
+                        .long("duration")
+                        .value_name("SECONDS")
+                        .help("Test duration in seconds")
+                        .takes_value(true)
+                        .default_value("300"),
+                )
+                .arg(
+                    Arg::with_name("concurrent")
+                        .short('c')
+                        .long("concurrent")
+                        .value_name("COUNT")
+                        .help("Number of concurrent senders")
+                        .takes_value(true)
+                        .default_value("10"),
+                ),
+        )
         .get_matches();
 
     match matches.subcommand() {
@@ -103,8 +126,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Messages: {}", message_count);
             println!("Message Size: {} bytes", message_size);
 
-            let result = quick_benchmark(node_type, transport_type, message_count, message_size).await;
-            
+            let result =
+                quick_benchmark(node_type, transport_type, message_count, message_size).await;
+
             println!("\n=== Quick Benchmark Results ===");
             println!("Messages Sent: {}", result.messages_sent);
             println!("Messages Received: {}", result.messages_received);
@@ -184,4 +208,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
-} 
+}

@@ -278,14 +278,24 @@ pub fn default_migrations() -> MigrationManager {
 pub trait Migration: Send + Sync {
     fn version(&self) -> u32;
     fn description(&self) -> &str;
-    fn up(&self, _pool: &()) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
+    fn up(
+        &self,
+        _pool: &(),
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
         Box::pin(async {
-            Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+            Err(crate::error::RatNetError::Feature(
+                "sqlite feature not enabled".to_string(),
+            ))
         })
     }
-    fn down(&self, _pool: &()) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
+    fn down(
+        &self,
+        _pool: &(),
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = crate::error::Result<()>> + Send>> {
         Box::pin(async {
-            Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+            Err(crate::error::RatNetError::Feature(
+                "sqlite feature not enabled".to_string(),
+            ))
         })
     }
 }
@@ -304,7 +314,9 @@ impl MigrationManager {
     }
 
     pub async fn migrate(&self, _pool: &()) -> crate::error::Result<()> {
-        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+        Err(crate::error::RatNetError::Feature(
+            "sqlite feature not enabled".to_string(),
+        ))
     }
 }
 

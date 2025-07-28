@@ -565,10 +565,14 @@ pub struct SqliteDatabase;
 #[cfg(not(feature = "sqlite"))]
 impl SqliteDatabase {
     pub async fn new(_database_url: &str) -> crate::error::Result<Self> {
-        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+        Err(crate::error::RatNetError::Feature(
+            "sqlite feature not enabled".to_string(),
+        ))
     }
 
     pub async fn new_memory() -> crate::error::Result<Self> {
-        Err(crate::error::RatNetError::Feature("sqlite feature not enabled".to_string()))
+        Err(crate::error::RatNetError::Feature(
+            "sqlite feature not enabled".to_string(),
+        ))
     }
 }
