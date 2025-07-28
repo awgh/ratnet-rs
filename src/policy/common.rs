@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 use tracing::{debug, error};
 
 use crate::api::crypto::PubKey;
-use crate::api::{Action, Bundle, Node, PeerInfo, RemoteCall, RemoteResponse, Transport};
+use crate::api::{Action, Bundle, Node, PeerInfo, Transport};
 use crate::error::{RatNetError, Result};
 
 /// PeerTable manages information about known peers and their connection state

@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use crate::api::*;
 use crate::database::Database;

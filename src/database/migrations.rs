@@ -7,7 +7,7 @@ use sqlx::sqlite::SqlitePool;
 #[cfg(feature = "sqlite")]
 use sqlx::Row;
 #[cfg(feature = "sqlite")]
-use tracing::{info, warn};
+use tracing::info;
 
 #[cfg(feature = "sqlite")]
 use crate::error::{RatNetError, Result};

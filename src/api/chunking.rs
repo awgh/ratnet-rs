@@ -3,11 +3,11 @@
 //! This module provides utilities to break large messages into smaller chunks
 //! for transports that have size limitations, and reassemble them on the receiving end.
 
-use crate::api::{Msg, Node, PubKey};
+use crate::api::{Msg, Node};
 use crate::error::{RatNetError, Result};
 use bytes::{BufMut, Bytes, BytesMut};
 use std::sync::Arc;
-use tracing::{debug, error, trace, warn};
+use tracing::{debug, trace};
 
 /// Default minimum chunk size (64KB)
 pub const DEFAULT_CHUNK_SIZE: u32 = 64 * 1024;

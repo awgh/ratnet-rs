@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::time::{interval, Duration};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use crate::api::{Node, Policy, Transport};
 use crate::error::Result;

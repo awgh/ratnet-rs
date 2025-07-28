@@ -7,7 +7,7 @@ use bytes::Bytes;
 #[cfg(feature = "sqlite")]
 use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
 #[cfg(feature = "sqlite")]
-use sqlx::{Row, Sqlite, Transaction};
+use sqlx::Row;
 #[cfg(feature = "sqlite")]
 use std::path::Path;
 #[cfg(feature = "sqlite")]
@@ -18,7 +18,7 @@ use crate::api::*;
 #[cfg(feature = "sqlite")]
 use crate::crypto::KeyPair;
 #[cfg(feature = "sqlite")]
-use crate::database::{default_migrations, Database, MigrationManager};
+use crate::database::{default_migrations, Database};
 #[cfg(feature = "sqlite")]
 use crate::error::{RatNetError, Result};
 

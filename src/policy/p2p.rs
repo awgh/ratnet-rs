@@ -6,8 +6,6 @@
 #[cfg(feature = "p2p")]
 use async_trait::async_trait;
 #[cfg(feature = "p2p")]
-use dns_parser::{Builder, Packet, QueryClass, QueryType, RData};
-#[cfg(feature = "p2p")]
 use rand::Rng;
 #[cfg(feature = "p2p")]
 use serde::{Deserialize, Serialize};

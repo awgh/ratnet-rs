@@ -3,10 +3,9 @@
 use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
-use std::sync::Arc;
 
 use crate::api::{Action, Transport};
-use crate::error::{RatNetError, Result};
+use crate::error::Result;
 
 /// Memory transport for testing
 pub struct MemoryTransport {

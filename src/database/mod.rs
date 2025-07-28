@@ -1,10 +1,9 @@
 //! Database abstraction and implementations for RatNet
 
 use async_trait::async_trait;
-use std::collections::HashMap;
 
 use crate::api::*;
-use crate::error::{RatNetError, Result};
+use crate::error::Result;
 
 pub mod migrations;
 pub mod sqlite;

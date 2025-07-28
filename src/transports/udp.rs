@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::Arc;
 use tokio::net::UdpSocket;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info};
 
 use crate::api::{Action, Transport, JSON};
 use crate::error::{RatNetError, Result};

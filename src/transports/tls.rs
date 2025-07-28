@@ -1,7 +1,6 @@
 //! TLS transport implementation
 
 use async_trait::async_trait;
-use bytes::Bytes;
 use rustls::{Certificate, ClientConfig, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::collections::HashMap;

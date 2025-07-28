@@ -2,10 +2,8 @@
 
 use base64::Engine;
 use rcgen::{Certificate, CertificateParams, IsCa, PKCS_ED25519};
-use ring::rand::{SecureRandom, SystemRandom};
-use ring::signature::{Ed25519KeyPair, KeyPair};
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime};
 
 use crate::error::{RatNetError, Result};
 

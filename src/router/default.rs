@@ -1,15 +1,13 @@
 //! Default router implementation
 
 use async_trait::async_trait;
-use bytes::{BufMut, Bytes, BytesMut};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use bytes::Bytes;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, info, trace};
 
 use crate::api::{
-    chunking, Channel, Chunk, Msg, Node, Patch, Router, StreamHeader, CHANNEL_FLAG, CHUNKED_FLAG,
+    chunking, Msg, Node, Patch, Router, CHANNEL_FLAG, CHUNKED_FLAG,
     JSON, STREAM_HEADER_FLAG,
 };
 use crate::error::{RatNetError, Result};

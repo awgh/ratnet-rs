@@ -11,7 +11,6 @@ use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::Arc;
-use tokio_rustls::TlsAcceptor;
 use tracing::{debug, error, info, warn};
 
 use crate::api::{Node, *};
