@@ -164,7 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Configuration: {config:?}");
 
             let mut runner = BenchmarkRunner::new(config);
-            let results = runner.run_benchmark_suite(3).await;
+            let _results = runner.run_benchmark_suite(3).await;
             let report = runner.generate_report();
 
             if let Some(output_path) = output_file {
@@ -196,7 +196,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             let mut runner = BenchmarkRunner::new(config);
-            let results = runner.run_benchmark_suite(1).await;
+            let _results = runner.run_benchmark_suite(1).await;
             let report = runner.generate_report();
 
             println!("{report}");

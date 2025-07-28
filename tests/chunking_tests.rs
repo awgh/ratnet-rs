@@ -132,7 +132,7 @@ async fn test_chunked_message_format() {
 #[tokio::test]
 async fn test_complete_chunking_flow() {
     let sender = Arc::new(MemoryNode::new());
-    let receiver = Arc::new(MemoryNode::new());
+    let _receiver = Arc::new(MemoryNode::new());
 
     // Create a message that needs chunking
     let large_content = "X".repeat(1000); // 1KB content
@@ -185,9 +185,9 @@ async fn test_stream_id_generation() {
     // They should be different (very high probability)
     assert_ne!(id1, id2);
 
-    // They should be valid u32 values
-    assert!(id1 <= u32::MAX);
-    assert!(id2 <= u32::MAX);
+    // They should be valid u32 values (this is always true for u32)
+    // assert!(id1 <= u32::MAX); // Always true for u32
+    // assert!(id2 <= u32::MAX); // Always true for u32
 }
 
 #[tokio::test]

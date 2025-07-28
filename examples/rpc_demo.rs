@@ -1,4 +1,4 @@
-use ratnet::api::{Action, Bundle, Node, RemoteCall, Transport};
+use ratnet::api::{Action, Bundle, Node, RemoteCall};
 use ratnet::nodes::MemoryNode;
 use ratnet::transports::UdpTransport;
 use std::sync::Arc;
@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     demo_error_handling(&node, &transport).await?;
 
     // Stop the node
-    node.stop().await;
+    let _ = node.stop().await;
     info!("Node stopped successfully");
 
     info!("RPC Demo completed successfully!");

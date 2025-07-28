@@ -59,7 +59,7 @@ async fn test_benchmark_with_different_node_types() {
             let result = quick_benchmark(node_type.clone(), transport_type.clone(), 5, 64).await;
 
             // Verify basic metrics are reasonable
-            assert!(result.messages_sent >= 0);
+            // assert!(result.messages_sent >= 0); // Always true for u32
             assert!(result.throughput_mps >= 0.0);
             assert!(result.avg_latency_ms >= 0.0);
             assert!(result.memory_usage_bytes > 0);
@@ -215,7 +215,7 @@ async fn test_benchmark_throughput_calculation() {
     let result = runner.run_benchmark().await;
 
     // Basic validation that the benchmark ran
-    assert!(result.messages_sent >= 0);
+    // assert!(result.messages_sent >= 0); // Always true for u32
     assert!(result.throughput_mps >= 0.0);
     assert!(result.throughput_mbps >= 0.0);
     assert!(result.duration_ms > 0);

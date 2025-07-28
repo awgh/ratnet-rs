@@ -38,15 +38,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     receiver_transport.set_byte_limit(4096);
 
     // Create routers
-    let sender_router = Arc::new(DefaultRouter::new());
-    let receiver_router = Arc::new(DefaultRouter::new());
+    let _sender_router = Arc::new(DefaultRouter::new());
+    let _receiver_router = Arc::new(DefaultRouter::new());
 
     // Create policies
-    let sender_policy = Arc::new(PollPolicy::new(
+    let _sender_policy = Arc::new(PollPolicy::new(
         sender_transport.clone(),
         sender_node.clone(),
     ));
-    let receiver_policy = Arc::new(PollPolicy::new(
+    let _receiver_policy = Arc::new(PollPolicy::new(
         receiver_transport.clone(),
         receiver_node.clone(),
     ));

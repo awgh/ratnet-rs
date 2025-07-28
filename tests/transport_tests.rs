@@ -355,6 +355,7 @@ async fn test_udp_transport_no_memory_leaks() {
         TRANSPORT_COUNT.fetch_add(1, Ordering::Relaxed);
 
         // Start and stop
+        #[allow(clippy::redundant_pattern_matching)]
         if let Ok(_) = transport.listen("127.0.0.1:0".to_string(), false).await {
             transport.stop().await.expect("Failed to stop transport");
         }
