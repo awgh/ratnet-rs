@@ -7,8 +7,7 @@ use tokio::sync::RwLock;
 use tracing::{debug, error, info, trace};
 
 use crate::api::{
-    chunking, Msg, Node, Patch, Router, CHANNEL_FLAG, CHUNKED_FLAG,
-    JSON, STREAM_HEADER_FLAG,
+    chunking, Msg, Node, Patch, Router, CHANNEL_FLAG, CHUNKED_FLAG, JSON, STREAM_HEADER_FLAG,
 };
 use crate::error::{RatNetError, Result};
 

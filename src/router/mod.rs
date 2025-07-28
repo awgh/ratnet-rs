@@ -2,7 +2,6 @@
 
 use std::sync::Arc;
 
-
 pub mod default;
 
 pub use default::DefaultRouter;
